@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 
 # Cấu hình trang Streamlit
 st.set_page_config(
-    page_title="Pixel Dungeon: Moving Monsters & BGM",
+    page_title="Pixel Dungeon: Real-time Monsters & Epic BGM",
     page_icon="⚔️",
     layout="centered"
 )
@@ -24,15 +24,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: MOVING MONSTERS & BGM 🗡️</h1>", unsafe_allow_html=True)
-st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> hoặc <b>Phím Mũi Tên</b>. Quái vật sẽ di chuyển theo bạn! Bấm nút bên dưới để bật nhạc nền!</div>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: EPIC SURVIVAL 🗡️</h1>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Quái vật sẽ liên tục chủ động tấn công và di chuyển theo bạn cả khi đứng yên!</div>", unsafe_allow_html=True)
 
 game_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Pixel Dungeon Advanced</title>
+    <title>Epic Pixel Dungeon</title>
     <style>
         body {
             background-color: #0b0b0e;
@@ -47,9 +47,9 @@ game_html = """
             overflow: hidden;
         }
         #game-container {
-            border: 4px solid #3d2817;
+            border: 4px solid #5a1818;
             background-color: #121016;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
+            box-shadow: 0 0 35px rgba(200, 0, 0, 0.4);
             position: relative;
         }
         canvas {
@@ -58,8 +58,8 @@ game_html = """
         }
         #audio-btn {
             margin-top: 10px;
-            background-color: #f1c40f;
-            color: #000;
+            background-color: #c0392b;
+            color: #fff;
             border: none;
             padding: 8px 16px;
             font-family: 'Courier New', Courier, monospace;
@@ -68,7 +68,7 @@ game_html = """
             border-radius: 4px;
         }
         #audio-btn:hover {
-            background-color: #d4ac0d;
+            background-color: #e74c3c;
         }
     </style>
 </head>
@@ -77,7 +77,7 @@ game_html = """
     <div id="game-container">
         <canvas id="gameCanvas" width="600" height="400"></canvas>
     </div>
-    <button id="audio-btn" onclick="toggleAudio()">🔊 Bật / Tắt Nhạc Nền 8-bit</button>
+    <button id="audio-btn" onclick="toggleAudio()">🔥 Bật / Tắt Nhạc Chiến Đấu Kịch Tính</button>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
@@ -103,8 +103,9 @@ game_html = """
         let currentMap = [];
         let monsters = [];
         let exitCoord = { x: 13, y: 8 };
+        let monsterMoveTimer = null; // Bộ đếm thời gian cho quái di chuyển liên tục
 
-        // --- HỆ THỐNG ÂM THANH NHẠC NỀN 8-BIT (WEB AUDIO API) ---
+        // --- HỆ THỐNG ÂM THANH KỊCH TÍNH (EPIC BGM) ---
         let audioCtx = null;
         let isPlayingBGM = false;
         let bgmInterval = null;
@@ -117,19 +118,19 @@ game_html = """
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume();
                 }
-                startBGM();
+                startEpicBGM();
                 isPlayingBGM = true;
-                document.getElementById("audio-btn").innerText = "🔇 Tắt Nhạc Nền";
+                document.getElementById("audio-btn").innerText = "🔇 Tắt Nhạc Kịch Tính";
             } else {
                 stopBGM();
                 isPlayingBGM = false;
-                document.getElementById("audio-btn").innerText = "🔊 Bật Nhạc Nền 8-bit";
+                document.getElementById("audio-btn").innerText = "🔥 Bật / Tắt Nhạc Chiến Đấu Kịch Tính";
             }
         }
 
-        function startBGM() {
-            // Giai điệu nhạc hầm ngục cổ điển (Chiptune arpeggio)
-            const notes = [110, 130.81, 146.83, 164.81, 130.81, 98.00, 110, 146.83];
+        function startEpicBGM() {
+            // Giai điệu chiến đấu dồn dập, mạnh mẽ (Fast minor scale chiptune)
+            const epicNotes = [220, 220, 261.63, 293.66, 329.63, 293.66, 261.63, 196, 220, 329.63, 392, 329.63];
             let noteIndex = 0;
 
             bgmInterval = setInterval(() => {
@@ -137,29 +138,29 @@ game_html = """
                 let osc = audioCtx.createOscillator();
                 let gain = audioCtx.createGain();
 
-                osc.type = 'square'; // Âm thanh kiểu máy game 4 nút cổ điển
-                osc.frequency.setValueAtTime(notes[noteIndex], audioCtx.currentTime);
+                osc.type = 'sawtooth'; // Âm thanh sắc bén, dồn dập thích hợp cho combat
+                osc.frequency.setValueAtTime(epicNotes[noteIndex], audioCtx.currentTime);
 
-                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
 
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
 
                 osc.start();
-                osc.stop(audioCtx.currentTime + 0.25);
+                osc.stop(audioCtx.currentTime + 0.18);
 
-                noteIndex = (noteIndex + 1) % notes.length;
-            }, 300);
+                noteIndex = (noteIndex + 1) % epicNotes.length;
+            }, 180); // Nhịp độ rất nhanh (180ms)
         }
 
-        function stopBGM() {
+            function stopBGM() {
             if (bgmInterval) {
                 clearInterval(bgmInterval);
                 bgmInterval = null;
             }
         }
-        // --------------------------------------------------------
+        // ----------------------------------------------
 
         function updateWeapon() {
             if (player.keys >= 2) {
@@ -245,42 +246,64 @@ game_html = """
 
         loadFloor(1);
 
-        // --- LOGIC DI CHUYỂN CỦA QUÁI VẬT ---
-        function moveMonsters() {
-            monsters.forEach(m => {
-                // Quái di chuyển hướng về phía người chơi (AI đơn giản)
-                let possibleMoves = [];
-                let directions = [
-                    { x: 0, y: -1 }, { x: 0, y: 1 },
-                    { x: -1, y: 0 }, { x: 1, y: 0 }
-                ];
+        // --- QUÁI TỰ ĐỘNG DI CHUYỂN LIÊN TỤC THEO THỜI GIAN THỰC ---
+        function startMonsterAI() {
+            if (monsterMoveTimer) clearInterval(monsterMoveTimer);
 
-                directions.forEach(d => {
-                    let nextX = m.x + d.x;
-                    let nextY = m.y + d.y;
-                    if (nextY >= 0 && nextY < ROWS && nextX >= 0 && nextX < COLS) {
-                        if (currentMap[nextY][nextX] !== 1) {
-                            possibleMoves.push({ x: nextX, y: nextY });
+            monsterMoveTimer = setInterval(() => {
+                // Quái di chuyển hướng về người chơi
+                monsters.forEach(m => {
+                    let possibleMoves = [];
+                    let directions = [
+                        { x: 0, y: -1 }, { x: 0, y: 1 },
+                        { x: -1, y: 0 }, { x: 1, y: 0 }
+                    ];
+
+                    directions.forEach(d => {
+                        let nextX = m.x + d.x;
+                        let nextY = m.y + d.y;
+                        if (nextY >= 0 && nextY < ROWS && nextX >= 0 && nextX < COLS) {
+                            if (currentMap[nextY][nextX] !== 1) {
+                                possibleMoves.push({ x: nextX, y: nextY });
+                            }
+                        }
+                    });
+
+                    if (possibleMoves.length > 0) {
+                        possibleMoves.sort((a, b) => {
+                            let distA = Math.abs(a.x - player.x) + Math.abs(a.y - player.y);
+                            let distB = Math.abs(b.x - player.x) + Math.abs(b.y - player.y);
+                            return distA - distB;
+                        });
+                        m.x = possibleMoves[0].x;
+                        m.y = possibleMoves[0].y;
+                    }
+                });
+
+                // Kiểm tra nếu quái chạm vào người chơi -> Gây sát thương liên tục
+                monsters.forEach(m => {
+                    if (Math.abs(m.x - player.x) + Math.abs(m.y - player.y) === 1) {
+                        let monsterDmg = 8 + (player.floor * 3);
+                        player.hp -= monsterDmg;
+                        if (player.hp <= 0) {
+                            alert("💀 Game Over! Quái vật đã hạ gục bạn ở Tầng " + player.floor + ". Điểm: " + player.score);
+                            player.hp = 100;
+                            player.score = 0;
+                            player.floor = 1;
+                            player.keys = 0;
+                            loadFloor(1);
                         }
                     }
                 });
 
-                if (possibleMoves.length > 0) {
-                    // Ưu tiên chọn ô gần người chơi nhất để đuổi theo
-                    possibleMoves.sort((a, b) => {
-                        let distA = Math.abs(a.x - player.x) + Math.abs(a.y - player.y);
-                        let distB = Math.abs(b.x - player.x) + Math.abs(b.y - player.y);
-                        return distA - distB;
-                    });
-                    // Di chuyển đến ô tối ưu
-                    m.x = possibleMoves[0].x;
-                    m.y = possibleMoves[0].y;
-                }
-            });
+                drawGame();
+            }, 1200); // Cứ mỗi 1.2 giây quái tự động bước 1 bước săn đuổi bạn
         }
-        // ------------------------------------
 
-        // Xử lý sự kiện bàn phím
+        startMonsterAI();
+        // ---------------------------------------------------------
+
+        // Xử lý sự kiện bàn phím khi người chơi di chuyển hoặc tấn công
         window.addEventListener('keydown', function(e) {
             if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d"].indexOf(e.key) > -1) {
                 e.preventDefault();
@@ -320,33 +343,15 @@ game_html = """
                         player.score += 1000;
                         alert("⚡ Sang Tầng " + player.floor + "! Vũ khí hiện tại: " + player.weaponName);
                         loadFloor(player.floor);
+                        startMonsterAI();
                         drawGame();
                         return;
                     } else {
                         player.x = newX;
                         player.y = newY;
                     }
-
-                    // Sau khi người chơi di chuyển xong, quái tiến hành di chuyển đuổi theo
-                    moveMonsters();
                 }
             }
-
-            // Kiểm tra quái tấn công người chơi
-            monsters.forEach(function(m) {
-                if (Math.abs(m.x - player.x) + Math.abs(m.y - player.y) === 1) {
-                    let monsterDmg = 12 + (player.floor * 4);
-                    player.hp -= monsterDmg;
-                    if (player.hp <= 0) {
-                        alert("💀 Game Over! Bạn đã hy sinh ở Tầng " + player.floor + ". Điểm: " + player.score);
-                        player.hp = 100;
-                        player.score = 0;
-                        player.floor = 1;
-                        player.keys = 0;
-                        loadFloor(1);
-                    }
-                }
-            });
 
             drawGame();
         });
@@ -403,68 +408,4 @@ game_html = """
                 } else if (m.type === 'goblin') {
                     ctx.fillStyle = '#27ae60';
                     ctx.fillRect(mx + 12, my + 10, 16, 20);
-                } else if (m.type === 'spider') {
-                    ctx.fillStyle = '#34495e';
-                    ctx.fillRect(mx + 10, my + 12, 20, 14);
-                } else {
-                    ctx.fillStyle = '#e67e22';
-                    ctx.fillRect(mx + 8, my + 6, 24, 28);
-                }
-
-                // Thanh máu nhỏ của quái
-                ctx.fillStyle = '#000';
-                ctx.fillRect(mx + 5, my + 2, 30, 4);
-                ctx.fillStyle = '#e74c3c';
-                ctx.fillRect(mx + 5, my + 2, Math.max(0, (m.hp / m.maxHp) * 30), 4);
-            });
-
-            // 3. Vẽ nhân vật hiệp sĩ và vũ khí
-            let px = player.x * TILE_SIZE;
-            let py = player.y * TILE_SIZE;
-            
-            ctx.fillStyle = '#2980b9';
-            ctx.fillRect(px + 8, py + 12, 24, 20);
-            ctx.fillStyle = '#bdc3c7';
-            ctx.fillRect(px + 12, py + 8, 16, 16);
-            ctx.fillStyle = '#8e44ad';
-            ctx.fillRect(px + 12, py + 4, 16, 8);
-            
-            ctx.fillStyle = player.weaponColor;
-            ctx.fillRect(px + 28, py + 12, 10, 6);
-
-            // 4. Vẽ khung giao diện HUD
-            ctx.fillStyle = 'rgba(15, 15, 20, 0.92)';
-            ctx.fillRect(10, 10, 240, 100);
-            ctx.strokeStyle = '#555';
-            ctx.strokeRect(10, 10, 240, 100);
-
-            ctx.fillStyle = '#c0392b';
-            ctx.fillRect(20, 18, 160, 16);
-            ctx.fillStyle = '#2ecc71';
-            let hpW = Math.max(0, (player.hp / player.maxHp) * 160);
-            ctx.fillRect(20, 18, hpW, 16);
-            
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 11px "Courier New"';
-            ctx.fillText('HP: ' + Math.max(0, player.hp) + '/' + player.maxHp, 26, 30);
-
-            ctx.fillStyle = '#f1c40f';
-            ctx.fillText('SCORE: ' + player.score, 20, 48);
-            
-            ctx.fillStyle = '#3498db';
-            ctx.fillText('FLOOR: ' + player.floor + 'F', 140, 48);
-            
-            ctx.fillStyle = '#e67e22';
-            ctx.fillText('KEYS: ' + player.keys, 20, 68);
-
-            ctx.fillStyle = player.weaponColor;
-            ctx.fillText('WEAPON: ' + player.weaponName, 20, 90);
-        }
-
-        drawGame();
-    </script>
-</body>
-</html>
-"""
-
-components.html(game_html, height=490)
+                } else if (
