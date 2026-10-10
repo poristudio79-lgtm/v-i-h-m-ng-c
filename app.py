@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 
 # Cấu hình trang Streamlit
 st.set_page_config(
-    page_title="Pixel Dungeon: Two-Handed Sword Hero",
+    page_title="Pixel Dungeon: Right-Handed Sword Stance",
     page_icon="⚔️",
     layout="centered"
 )
@@ -24,15 +24,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: TWO-HANDED SWORD HERO 🗡️</h1>", unsafe_allow_html=True)
-st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Nhân vật đã được thiết kế <b>hai tay ôm cầm kiếm</b> sắc nét! Quái tự động đuổi theo bạn.</div>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: BATTLE STANCE 🗡️</h1>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Nhân vật cầm kiếm lệch sang phải và nghiêng người theo hướng kiếm!</div>", unsafe_allow_html=True)
 
 game_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Two-Handed Sword Pixel Dungeon</title>
+    <title>Right-Stance Pixel Dungeon</title>
     <style>
         body {
             background-color: #0b0b0e;
@@ -466,60 +466,60 @@ game_html = """
                 slashEffect.timer--;
             }
 
-            // 4. VẼ NHÂN VẬT CHÍNH (HAI TAY ÔM CẦM KIẾM, CÓ CHÂN NHÚN NHẢY)
+            // 4. VẼ NHÂN VẬT CHÍNH (NGƯỜI NGHIÊNG SANG PHẢI, HAI TAY CẦM KIẾM LỆCH PHẢI)
             let px = player.x * TILE_SIZE;
             let bounce = Math.sin(idleCounter) * 2; 
             let py = (player.y * TILE_SIZE) + bounce;
 
-            // Chân nhún nhảy
+            // Chân nhún nhảy lệch phải một chút theo thân người
             ctx.fillStyle = '#117864';
             let legOffset = Math.sin(idleCounter * 2) > 0 ? 1 : -1;
-            ctx.fillRect(px + 13, py + 30, 4, 6 + legOffset);
-            ctx.fillRect(px + 23, py + 30, 4, 6 - legOffset);
+            ctx.fillRect(px + 12, py + 30, 4, 6 + legOffset);
+            ctx.fillRect(px + 20, py + 30, 4, 6 - legOffset);
 
-            // Áo choàng
+            // Áo choàng (nghiêng sang phải)
             ctx.fillStyle = '#1b4f72';
-            ctx.fillRect(px + 10, py + 12, 20, 20);
+            ctx.fillRect(px + 8, py + 12, 18, 20);
 
-            // Giáp ngực
+            // Giáp ngực (dịch chuyển sang phải tạo góc nghiêng)
             ctx.fillStyle = '#bdc3c7';
-            ctx.fillRect(px + 12, py + 14, 16, 14);
+            ctx.fillRect(px + 12, py + 14, 15, 14);
             ctx.fillStyle = '#7f8c8d';
-            ctx.fillRect(px + 12, py + 14, 16, 3);
+            ctx.fillRect(px + 12, py + 14, 15, 3);
 
             // Mũ giáp
             ctx.fillStyle = '#566573';
-            ctx.fillRect(px + 12, py + 6, 16, 10);
+            ctx.fillRect(px + 12, py + 6, 15, 10);
             ctx.fillStyle = '#000000';
-            ctx.fillRect(px + 15, py + 9, 10, 3);
+            ctx.fillRect(px + 14, py + 9, 9, 3);
             ctx.fillStyle = '#e74c3c';
-            ctx.fillRect(px + 18, py + 3, 4, 4);
+            ctx.fillRect(px + 16, py + 3, 4, 4);
 
-            // --- HAI TAY ÔM CẦM KIẾM Ở TRƯỚC NGỰC ---
-            ctx.fillStyle = '#bdc3c7'; // Tay trái
-            ctx.fillRect(px + 8, py + 18, 5, 4);
-            ctx.fillStyle = '#bdc3c7'; // Tay phải
-            ctx.fillRect(px + 27, py + 18, 5, 4);
+            // --- HAI TAY VÀ THANH KIẾM LỆCH PHẢI, HƯỚNG VỀ PHÁT KIẾM ---
+            ctx.fillStyle = '#bdc3c7'; // Tay trái vươn sang phải
+            ctx.fillRect(px + 22, py + 16, 6, 4);
+            ctx.fillStyle = '#bdc3c7'; // Tay phải giữ cán
+            ctx.fillRect(px + 25, py + 20, 5, 4);
 
-            // --- CẤU TRÚC THANH KIẾM (ĐẶT Ở TRUNG TÂM, HAI TAY ÔM GIỮ) ---
-            // 1. Đế kiếm (Pommel)
+            // --- CẤU TRÚC KIẾM LỆCH PHẢI HOÀN CHỈNH ---
+            // 1. Đế kiếm
             ctx.fillStyle = player.pommelColor;
-            ctx.fillRect(px + 18, py + 26, 4, 3);
-            // 2. Chuôi cầm (Hilt)
+            ctx.fillRect(px + 27, py + 26, 4, 3);
+            // 2. Chuôi cầm
             ctx.fillStyle = player.hiltColor;
-            ctx.fillRect(px + 18, py + 20, 4, 6);
-            // 3. Chắn kiếm (Guard - Ngang bảo vệ tay)
+            ctx.fillRect(px + 27, py + 20, 4, 6);
+            // 3. Chắn kiếm
             ctx.fillStyle = player.guardColor;
-            ctx.fillRect(px + 14, py + 18, 12, 3);
-            // 4. Thân lưỡi kiếm (Blade)
+            ctx.fillRect(px + 24, py + 18, 10, 3);
+            // 4. Thân lưỡi kiếm
             ctx.fillStyle = player.bladeColor;
-            ctx.fillRect(px + 18, py + 8, 4, 10);
-            // 5. Mũi kiếm sắc nhọn (Tip)
+            ctx.fillRect(px + 27, py + 8, 4, 10);
+            // 5. Mũi kiếm
             ctx.fillStyle = player.tipColor;
             ctx.beginPath();
-            ctx.moveTo(px + 18, py + 8);
-            ctx.lineTo(px + 20, py + 3);
-            ctx.lineTo(px + 22, py + 8);
+            ctx.moveTo(px + 27, py + 8);
+            ctx.lineTo(px + 29, py + 3);
+            ctx.lineTo(px + 31, py + 8);
             ctx.fill();
 
             // 5. Khung giao diện HUD
