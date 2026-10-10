@@ -1,10 +1,11 @@
 
-        import streamlit as st
+  
+import streamlit as st
 import streamlit.components.v1 as components
 
 # Cấu hình trang Streamlit
 st.set_page_config(
-    page_title="Pixel Dungeon: Detailed Hero Edition",
+    page_title="Pixel Dungeon: Complete Edition",
     page_icon="⚔️",
     layout="centered"
 )
@@ -25,15 +26,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: DETAILED HERO RPG 🗡️</h1>", unsafe_allow_html=True)
-st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Nhân vật chính giờ đây đã có mắt, mũi, miệng rõ ràng! Phá đảo ở Tầng 10!</div>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: ULTIMATE RPG 🗡️</h1>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Qua màn mới sẽ xuất hiện menu chọn Đổi Vũ Khí hoặc Qua Tầng! Phá đảo ở Tầng 10!</div>", unsafe_allow_html=True)
 
 game_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Pixel Dungeon Detailed Hero</title>
+    <title>Pixel Dungeon Complete</title>
     <style>
         body {
             background-color: #050508;
@@ -634,20 +635,16 @@ game_html = """
             ctx.fillRect(px + 10, py + 6, 14, 10);
             
             // --- KHUÔN MẶT: MẮT, MŨI, MIỆNG ---
-            // Mắt trái & Mắt phải (Màu đen tinh nghịch)
             ctx.fillStyle = '#000000';
             ctx.fillRect(px + 12, py + 9, 2, 2);
             ctx.fillRect(px + 18, py + 9, 2, 2);
 
-            // Mũi nhỏ
             ctx.fillStyle = '#f5b041';
             ctx.fillRect(px + 15, py + 11, 2, 2);
 
-            // Miệng cườimỉm
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(px + 14, py + 14, 4, 1);
 
-            // Lông vũ trên mũ
             ctx.fillStyle = player.featherColor;
             ctx.fillRect(px + 14, py + 3, 4, 4);
 
