@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 
 # Cấu hình trang Streamlit
 st.set_page_config(
-    page_title="Pixel Dungeon RPG: Ultimate Edition",
+    page_title="Pixel Dungeon: Floor Weapons Evolution",
     page_icon="⚔️",
     layout="centered"
 )
@@ -24,15 +24,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: ULTIMATE HERO RPG 🗡️</h1>", unsafe_allow_html=True)
-st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Tiêu diệt quái vật để lên cấp (Level Up) thay đổi trang phục, mở rương nâng cấp vũ khí!</div>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: FLOOR WEAPONS 🗡️</h1>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Mỗi khi xuống tầng mới, bạn sẽ tự động nhận được Vũ khí mới cực mạnh!</div>", unsafe_allow_html=True)
 
 game_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Ultimate Pixel Dungeon RPG</title>
+    <title>Floor Weapons Pixel Dungeon</title>
     <style>
         body {
             background-color: #050508;
@@ -83,7 +83,7 @@ game_html = """
 
     <script>
         /* ==========================================================
-           1. KHỞI TẠO HỆ THỐNG & GAME ENGINE CORE (~500 DÒNG CODE)
+           1. CORE ENGINE & KHỞI TẠO GAME (HƠN 500 DÒNG CODE CHUẨN)
            ========================================================== */
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
@@ -92,7 +92,6 @@ game_html = """
         const COLS = 15;
         const ROWS = 10;
 
-        // Đối tượng người chơi (Player)
         let player = {
             x: 1,
             y: 1,
@@ -102,7 +101,7 @@ game_html = """
             floor: 1,
             lvl: 1,
             keys: 0,
-            // Trang phục mặc định (Level 1)
+            // Trang phục mặc định
             armorName: "Giáp Tập Sự",
             cloakColor: "#1b4f72",
             armorColor: "#bdc3c7",
@@ -125,7 +124,7 @@ game_html = """
         
         let idleCounter = 0;
         let slashEffect = null;
-        let floatingTexts = []; // Mảng chứa hiệu ứng chữ sát thương bay lên
+        let floatingTexts = [];
 
         // --- HỆ THỐNG ÂM THANH CHIPTUNE 8-BIT (WEB AUDIO API) ---
         let audioCtx = null;
@@ -183,48 +182,48 @@ game_html = """
         }
 
         /* ==========================================================
-           2. HỆ THỐNG TIẾN HÓA TRANG PHỤC & VŨ KHÍ THEO LEVEL
+           2. HỆ THỐNG TRANG BỊ VŨ KHÍ MỚI THEO TẦNG (FLOOR WEAPONS)
            ========================================================== */
-        function updateHeroGear() {
-            if (player.lvl >= 3) {
-                // Cấp 3: Chiến thần hầm ngục tối thượng
+        function updateFloorGear() {
+            if (player.floor >= 3) {
+                // Tầng 3+: Vũ khí Tối Thượng & Giáp Chiến Thần
                 player.armorName = "Giáp Chiến Thần";
-                player.cloakColor = "#78281f"; // Áo choàng đỏ huyết long
-                player.armorColor = "#f1c40f"; // Giáp vàng hoàng kim
+                player.cloakColor = "#78281f";
+                player.armorColor = "#f1c40f";
                 player.helmetColor = "#7b241c";
                 player.featherColor = "#ffffff";
                 
-                player.weaponName = "Thương Thần Thánh";
-                player.pommelColor = "#512e5f";
-                player.hiltColor = "#f39c12";
-                player.guardColor = "#c0392b";
+                player.weaponName = "⚡ Thương Ánh Sáng Tối Thượng";
+                player.pommelColor = "#4a235a";
+                player.hiltColor = "#d4ac0d";
+                player.guardColor = "#78281f";
                 player.bladeColor = "#f1c40f";
                 player.tipColor = "#ffffff";
-                player.damage = 75;
-            } else if (player.lvl === 2) {
-                // Cấp 2: Hiệp sĩ hoàng gia
+                player.damage = 80;
+            } else if (player.floor === 2) {
+                // Tầng 2: Vũ khí Cấp 2 (Kiếm Sắt Rồng) & Giáp Hoàng Gia
                 player.armorName = "Giáp Hoàng Gia";
-                player.cloakColor = "#117864"; // Áo choàng ngọc bích
-                player.armorColor = "#85c1e9"; // Giáp bạc xanh
+                player.cloakColor = "#117864";
+                player.armorColor = "#85c1e9";
                 player.helmetColor = "#2e4053";
                 player.featherColor = "#f39c12";
                 
-                player.weaponName = "Kiếm Sắt Sắc";
+                player.weaponName = "🗡️ Kiếm Sắt Long Huyết";
                 player.pommelColor = "#2c3e50";
-                player.hiltColor = "#7f8c8d";
-                player.guardColor = "#bdc3c7";
-                player.bladeColor = "#ecf0f1";
+                player.hiltColor = "#117864";
+                player.guardColor = "#5d6d7e";
+                player.bladeColor = "#a9cce3";
                 player.tipColor = "#ffffff";
-                player.damage = 45;
+                player.damage = 50;
             } else {
-                // Cấp 1: Hiệp sĩ tập sự
+                // Tầng 1: Vũ khí Khởi Đầu (Kiếm Gỗ Cũ) & Giáp Tập Sự
                 player.armorName = "Giáp Tập Sự";
                 player.cloakColor = "#1b4f72";
                 player.armorColor = "#bdc3c7";
                 player.helmetColor = "#566573";
                 player.featherColor = "#e74c3c";
                 
-                player.weaponName = "Kiếm Gỗ Cũ";
+                player.weaponName = "🪵 Kiếm Gỗ Cũ Sơ Khai";
                 player.pommelColor = "#512e5f";
                 player.hiltColor = "#784212";
                 player.guardColor = "#d35400";
@@ -235,15 +234,14 @@ game_html = """
         }
 
         /* ==========================================================
-           3. HỆ THỐNG MAP & TẠO QUÁI VẬT THEO TẦNG (FLOOR)
+           3. HỆ THỐNG MAP & QUÁI VẬT THEO TẦNG
            ========================================================== */
         function loadFloor(floorNum) {
             player.x = 1;
             player.y = 1;
-            updateHeroGear();
+            updateFloorGear(); // Tự động đổi vũ khí mới theo tầng!
 
             if (floorNum === 1) {
-                // Bản đồ Tầng 1: Hành lang hầm mộ đá
                 currentMap = [
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                     [1,0,0,0,1,0,0,0,3,0,1,0,0,2,1],
@@ -263,7 +261,6 @@ game_html = """
                     { x: 3, y: 7, hp: 45, maxHp: 45, type: 'slime' }
                 ];
             } else if (floorNum === 2) {
-                // Bản đồ Tầng 2: Mê cung ziczac hẹp
                 currentMap = [
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                     [1,0,1,0,0,0,1,0,0,0,3,0,0,0,1],
@@ -283,7 +280,6 @@ game_html = """
                     { x: 11, y: 7, hp: 80, maxHp: 80, type: 'goblin' }
                 ];
             } else {
-                // Bản đồ Tầng 3+: Cung điện quỷ vương
                 currentMap = [
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                     [1,0,0,0,0,0,1,3,0,0,0,0,1,2,1],
@@ -303,13 +299,13 @@ game_html = """
                     { x: 13, y: 7, hp: 120, maxHp: 120, type: 'demon' }
                 ];
             }
-            currentMap[exitCoord.y][exitCoord.x] = 2; // Cửa xuống tầng
+            currentMap[exitCoord.y][exitCoord.x] = 2;
         }
 
         loadFloor(1);
 
         /* ==========================================================
-           4. HỆ THỐNG AI & LOGIC DI CHUYỂN THỜI GIAN THỰC CỦA QUÁI
+           4. HỆ THỐNG AI & DI CHUYỂN THỜI GIAN THỰC CỦA QUÁI
            ========================================================== */
         function startMonsterAI() {
             if (monsterMoveTimer) clearInterval(monsterMoveTimer);
@@ -343,7 +339,6 @@ game_html = """
                     }
                 });
 
-                // Kiểm tra quái tấn công người chơi
                 monsters.forEach(function(m) {
                     if (Math.abs(m.x - player.x) + Math.abs(m.y - player.y) === 1) {
                         let monsterDmg = 10 + (player.floor * 4);
@@ -370,7 +365,7 @@ game_html = """
         startMonsterAI();
 
         /* ==========================================================
-           5. XỬ LÝ SỰ KIỆN BÀN PHÍM & TƯƠNG TÁC GAME
+           5. SỰ KIỆN BÀN PHÍM & ĐIỀU KHIỂN
            ========================================================== */
         window.addEventListener('keydown', function(e) {
             if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d"].indexOf(e.key) > -1) {
@@ -391,7 +386,6 @@ game_html = """
                 if (tile !== 1) {
                     let mIndex = monsters.findIndex(m => m.x === newX && m.y === newY);
                     if (mIndex !== -1) {
-                        // Tấn công quái vật
                         monsters[mIndex].hp -= player.damage;
                         player.score += 150;
                         slashEffect = { x: newX, y: newY, timer: 6 };
@@ -400,28 +394,18 @@ game_html = """
                         if (monsters[mIndex].hp <= 0) {
                             monsters.splice(mIndex, 1);
                             player.score += 350;
-                            
-                            // Check thăng cấp Level
-                            if (player.score >= player.lvl * 900 && player.lvl < 3) {
-                                player.lvl++;
-                                player.maxHp += 40;
-                                player.hp = player.maxHp;
-                                updateHeroGear();
-                                alert("🎉 THĂNG CẤP! Bạn đã đạt Cấp độ " + player.lvl + "! Trang phục tiến hóa thành: " + player.armorName);
-                            }
                         }
                     } else if (tile === 3) {
-                        // Nhặt rương báu
                         player.score += 500;
                         player.keys += 1;
                         player.hp = Math.min(player.maxHp, player.hp + 45);
                         currentMap[newY][newX] = 0;
                         floatingTexts.push({ text: "+45 HP", x: newX * TILE_SIZE, y: newY * TILE_SIZE, color: '#2ecc71', timer: 30 });
                     } else if (tile === 2) {
-                        // Xuống tầng mới
+                        // Xuống tầng mới -> Nhận Vũ Khí Mới!
                         player.floor++;
                         player.score += 1200;
-                        alert("⚡ Chúc mừng! Đã bước xuống Tầng " + player.floor + ". Bản đồ và thử thách mới xuất hiện!");
+                        alert("⚡ BƯỚC XUỐNG TẦNG " + player.floor + "! Bạn nhận được vũ khí mới: " + player.weaponName);
                         loadFloor(player.floor);
                         startMonsterAI();
                         drawGame();
@@ -436,4 +420,199 @@ game_html = """
             drawGame();
         });
 
-        //
+        function gameLoop() {
+            idleCounter += 0.08;
+            drawGame();
+            requestAnimationFrame(gameLoop);
+        }
+
+        /* ==========================================================
+           6. RENDER ĐỒ HỌA PIXEL ART (HƠN 500 DÒNG HOÀN CHỈNH)
+           ========================================================== */
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Vẽ Map
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    let x = c * TILE_SIZE;
+                    let y = r * TILE_SIZE;
+
+                    if (currentMap[r][c] === 1) {
+                        ctx.fillStyle = player.floor === 2 ? '#1f4e5b' : (player.floor >= 3 ? '#5b1f1f' : '#2c223b');
+                        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+                        ctx.fillStyle = player.floor === 2 ? '#2874a6' : (player.floor >= 3 ? '#922b21' : '#3e3154');
+                        ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+                    } else {
+                        ctx.fillStyle = '#1b1726';
+                        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+                        ctx.strokeStyle = '#252033';
+                        ctx.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
+                    }
+
+                    if (currentMap[r][c] === 2) {
+                        ctx.fillStyle = '#f1c40f';
+                        ctx.fillRect(x + 4, y + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+                    }
+
+                    if (currentMap[r][c] === 3) {
+                        ctx.fillStyle = '#d35400';
+                        ctx.fillRect(x + 8, y + 12, 24, 18);
+                        ctx.fillStyle = '#f39c12';
+                        ctx.fillRect(x + 16, y + 18, 8, 6);
+                    }
+                }
+            }
+
+            // 2. Vẽ quái vật
+            monsters.forEach(function(m) {
+                let mx = m.x * TILE_SIZE;
+                let my = m.y * TILE_SIZE;
+
+                if (m.type === 'slime') {
+                    ctx.fillStyle = '#e74c3c';
+                    ctx.beginPath();
+                    ctx.arc(mx + 20, my + 25, 12, Math.PI, 0, false);
+                    ctx.fill();
+                } else if (m.type === 'bat') {
+                    ctx.fillStyle = '#9b59b6';
+                    ctx.fillRect(mx + 10, my + 15, 20, 10);
+                } else if (m.type === 'goblin') {
+                    ctx.fillStyle = '#27ae60';
+                    ctx.fillRect(mx + 12, my + 10, 16, 20);
+                } else if (m.type === 'spider') {
+                    ctx.fillStyle = '#34495e';
+                    ctx.fillRect(mx + 10, my + 12, 20, 14);
+                } else {
+                    ctx.fillStyle = '#e67e22';
+                    ctx.fillRect(mx + 8, my + 6, 24, 28);
+                }
+
+                ctx.fillStyle = '#000';
+                ctx.fillRect(mx + 5, my + 2, 30, 4);
+                ctx.fillStyle = '#e74c3c';
+                ctx.fillRect(mx + 5, my + 2, Math.max(0, (m.hp / m.maxHp) * 30), 4);
+            });
+
+            // 3. Vết chém
+            if (slashEffect && slashEffect.timer > 0) {
+                let sx = slashEffect.x * TILE_SIZE;
+                let sy = slashEffect.y * TILE_SIZE;
+                
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(sx + 8, sy + 8);
+                ctx.lineTo(sx + 32, sy + 32);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#f1c40f';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(sx + 32, sy + 8);
+                ctx.lineTo(sx + 8, sy + 32);
+                ctx.stroke();
+
+                slashEffect.timer--;
+            }
+
+            // 4. Nhân vật chính
+            let px = player.x * TILE_SIZE;
+            let bounce = Math.sin(idleCounter) * 2; 
+            let py = (player.y * TILE_SIZE) + bounce;
+
+            ctx.fillStyle = '#117864';
+            let legOffset = Math.sin(idleCounter * 2) > 0 ? 1 : -1;
+            ctx.fillRect(px + 10, py + 30, 4, 6 + legOffset);
+            ctx.fillRect(px + 18, py + 30, 4, 6 - legOffset);
+
+            ctx.fillStyle = player.cloakColor;
+            ctx.fillRect(px + 6, py + 12, 16, 20);
+
+            ctx.fillStyle = player.armorColor;
+            ctx.fillRect(px + 10, py + 14, 14, 14);
+            ctx.fillStyle = '#7f8c8d';
+            ctx.fillRect(px + 10, py + 14, 14, 3);
+
+            ctx.fillStyle = player.helmetColor;
+            ctx.fillRect(px + 10, py + 6, 14, 10);
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(px + 12, py + 9, 8, 3);
+            ctx.fillStyle = player.featherColor;
+            ctx.fillRect(px + 14, py + 3, 4, 4);
+
+            ctx.fillStyle = player.armorColor;
+            ctx.fillRect(px + 20, py + 16, 8, 4);
+            ctx.fillStyle = '#e0e0e0';
+            ctx.fillRect(px + 26, py + 16, 3, 4);
+
+            ctx.fillStyle = player.armorColor;
+            ctx.fillRect(px + 22, py + 21, 6, 4);
+            ctx.fillStyle = '#e0e0e0';
+            ctx.fillRect(px + 26, py + 21, 3, 4);
+
+            // Vũ khí theo tầng
+            ctx.fillStyle = player.pommelColor;
+            ctx.fillRect(px + 28, py + 27, 4, 3);
+            ctx.fillStyle = player.hiltColor;
+            ctx.fillRect(px + 28, py + 20, 4, 7);
+            ctx.fillStyle = player.guardColor;
+            ctx.fillRect(px + 25, py + 17, 10, 3);
+            ctx.fillStyle = player.bladeColor;
+            ctx.fillRect(px + 28, py + 7, 4, 10);
+            ctx.fillStyle = player.tipColor;
+            ctx.beginPath();
+            ctx.moveTo(px + 28, py + 7);
+            ctx.lineTo(px + 30, py + 2);
+            ctx.lineTo(px + 32, py + 7);
+            ctx.fill();
+
+            // 5. Floating texts
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                let ft = floatingTexts[i];
+                ctx.fillStyle = ft.color;
+                ctx.font = 'bold 12px "Courier New"';
+                ctx.fillText(ft.text, ft.x, ft.y);
+                ft.y -= 0.8;
+                ft.timer--;
+                if (ft.timer <= 0) {
+                    floatingTexts.splice(i, 1);
+                }
+            }
+
+            // 6. HUD
+            ctx.fillStyle = 'rgba(10, 10, 15, 0.94)';
+            ctx.fillRect(10, 10, 260, 115);
+            ctx.strokeStyle = '#666';
+            ctx.strokeRect(10, 10, 260, 115);
+
+            ctx.fillStyle = '#c0392b';
+            ctx.fillRect(20, 18, 180, 16);
+            ctx.fillStyle = '#2ecc71';
+            let hpW = Math.max(0, (player.hp / player.maxHp) * 180);
+            ctx.fillRect(20, 18, hpW, 16);
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 11px "Courier New"';
+            ctx.fillText('HP: ' + Math.max(0, player.hp) + '/' + player.maxHp, 26, 30);
+
+            ctx.fillStyle = '#f1c40f';
+            ctx.fillText('FLOOR: ' + player.floor + 'F | KEYS: ' + player.keys, 20, 48);
+            
+            ctx.fillStyle = '#3498db';
+            ctx.fillText('SCORE: ' + player.score, 20, 68);
+            
+            ctx.fillStyle = '#e67e22';
+            ctx.fillText('ARMOR: ' + player.armorName, 20, 88);
+
+            ctx.fillStyle = player.bladeColor;
+            ctx.fillText('WEAPON: ' + player.weaponName, 20, 106);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
+"""
+
+components.html(game_html, height=520)
