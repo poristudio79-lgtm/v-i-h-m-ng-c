@@ -1,10 +1,9 @@
-
-  import streamlit as st
+import streamlit as st
 import streamlit.components.v1 as components
 
 # Cấu hình trang Streamlit
 st.set_page_config(
-    page_title="Pixel Dungeon: Unique Maps Per Floor",
+    page_title="Pixel Dungeon RPG",
     page_icon="⚔️",
     layout="centered"
 )
@@ -25,15 +24,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: MULTI-MAP & EPIC BGM 🗡️</h1>", unsafe_allow_html=True)
-st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Mỗi tầng hầm là một bản đồ (map) hoàn toàn mới với quái vật nguy hiểm riêng!</div>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON CRAWLER RPG 🗡️</h1>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> hoặc <b>Phím Mũi Tên</b> để di chuyển. Mở rương lấy chìa khóa đổi vũ khí mạnh hơn!</div>", unsafe_allow_html=True)
 
 game_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Multi-Map Pixel Dungeon</title>
+    <title>Pixel Dungeon Perfect</title>
     <style>
         body {
             background-color: #0b0b0e;
@@ -113,7 +112,7 @@ game_html = """
         let idleCounter = 0;
         let slashEffect = null;
 
-        // --- HỆ THỐNG ÂM THANH KỊCH TÍNH (EPIC BGM) ---
+        // --- ÂM THANH KỊCH TÍNH (WEB AUDIO API) ---
         let audioCtx = null;
         let isPlayingBGM = false;
         let bgmInterval = null;
@@ -140,7 +139,7 @@ game_html = """
             const epicNotes = [220, 220, 261.63, 293.66, 329.63, 293.66, 261.63, 196, 220, 329.63, 392, 329.63];
             let noteIndex = 0;
 
-            bgmInterval = setInterval(() => {
+            bgmInterval = setInterval(function() {
                 if (!isPlayingBGM || !audioCtx) return;
                 let osc = audioCtx.createOscillator();
                 let gain = audioCtx.createGain();
@@ -167,8 +166,8 @@ game_html = """
                 bgmInterval = null;
             }
         }
-        // ----------------------------------------------
 
+        // Cập nhật cấu trúc & màu sắc vũ khí theo số Chìa Khóa
         function updateWeapon() {
             if (player.keys >= 2) {
                 player.weaponName = "Thương Thần Thánh";
@@ -197,14 +196,13 @@ game_html = """
             }
         }
 
-        // --- HỆ THỐNG ĐỔI MAP VÀ QUÁI THEO TỪNG TẦNG ---
+        // Tải bản đồ (Map) và quái vật riêng biệt theo từng Tầng
         function loadFloor(floorNum) {
             player.x = 1;
             player.y = 1;
             updateWeapon();
 
             if (floorNum === 1) {
-                // Map Tầng 1: Hành lang chữ U cơ bản
                 currentMap = [
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                     [1,0,0,0,1,0,0,0,3,0,1,0,0,2,1],
@@ -224,7 +222,6 @@ game_html = """
                     { x: 3, y: 7, hp: 35, maxHp: 35, type: 'slime' }
                 ];
             } else if (floorNum === 2) {
-                // Map Tầng 2: Cấu trúc mê cung ziczac hẹp
                 currentMap = [
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                     [1,0,1,0,0,0,1,0,0,0,3,0,0,0,1],
@@ -238,104 +235,3 @@ game_html = """
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
                 ];
                 exitCoord = { x: 13, y: 5 };
-                monsters = [
-                    { x: 7, y: 3, hp: 60, maxHp: 60, type: 'goblin' },
-                    { x: 3, y: 5, hp: 50, maxHp: 50, type: 'spider' },
-                    { x: 11, y: 7, hp: 70, maxHp: 70, type: 'goblin' }
-                ];
-            } else {
-                // Map Tầng 3+: Cấu trúc phòng lớn và đảo chướng ngại vật
-                currentMap = [
-                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-                    [1,0,0,0,0,0,1,3,0,0,0,0,1,2,1],
-                    [1,0,1,1,1,0,1,1,1,0,1,0,1,0,1],
-                    [1,0,1,3,1,0,0,0,1,0,1,0,1,0,1],
-                    [1,0,1,0,1,1,1,0,1,0,1,1,1,0,1],
-                    [1,0,0,0,0,0,1,0,0,0,0,0,0,0,1],
-                    [1,1,1,1,1,0,1,1,1,1,1,0,1,1,1],
-                    [1,0,0,0,1,0,0,0,3,0,1,0,0,3,1],
-                    [1,0,1,0,1,1,1,1,1,0,1,1,1,0,1],
-                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-                ];
-                exitCoord = { x: 13, y: 1 };
-                monsters = [
-                    { x: 7, y: 4, hp: 110, maxHp: 110, type: 'golem' },
-                    { x: 3, y: 1, hp: 90, maxHp: 90, type: 'demon' },
-                    { x: 13, y: 7, hp: 100, maxHp: 100, type: 'demon' }
-                ];
-            }
-            // Đặt cầu thang xuống tầng (2) vào đúng tọa độ của map đó
-            currentMap[exitCoord.y][exitCoord.x] = 2;
-        }
-
-        loadFloor(1);
-
-        // --- QUÁI TỰ ĐỘNG DI CHUYỂN LIÊN TỤC ---
-        function startMonsterAI() {
-            if (monsterMoveTimer) clearInterval(monsterMoveTimer);
-
-            monsterMoveTimer = setInterval(() => {
-                monsters.forEach(m => {
-                    let possibleMoves = [];
-                    let directions = [
-                        { x: 0, y: -1 }, { x: 0, y: 1 },
-                        { x: -1, y: 0 }, { x: 1, y: 0 }
-                    ];
-
-                    directions.forEach(d => {
-                        let nextX = m.x + d.x;
-                        let nextY = m.y + d.y;
-                        if (nextY >= 0 && nextY < ROWS && nextX >= 0 && nextX < COLS) {
-                            if (currentMap[nextY][nextX] !== 1) {
-                                possibleMoves.push({ x: nextX, y: nextY });
-                            }
-                        }
-                    });
-
-                    if (possibleMoves.length > 0) {
-                        possibleMoves.sort((a, b) => {
-                            let distA = Math.abs(a.x - player.x) + Math.abs(a.y - player.y);
-                            let distB = Math.abs(b.x - player.x) + Math.abs(b.y - player.y);
-                            return distA - distB;
-                        });
-                        m.x = possibleMoves[0].x;
-                        m.y = possibleMoves[0].y;
-                    }
-                });
-
-                monsters.forEach(m => {
-                    if (Math.abs(m.x - player.x) + Math.abs(m.y - player.y) === 1) {
-                        let monsterDmg = 8 + (player.floor * 3);
-                        player.hp -= monsterDmg;
-                        if (player.hp <= 0) {
-                            alert("💀 Game Over! Quái vật đã hạ gục bạn ở Tầng " + player.floor + ". Điểm: " + player.score);
-                            player.hp = 100;
-                            player.score = 0;
-                            player.floor = 1;
-                            player.keys = 0;
-                            loadFloor(1);
-                        }
-                    }
-                });
-
-                drawGame();
-            }, 1200);
-        }
-
-        startMonsterAI();
-
-        // Xử lý bàn phím
-        window.addEventListener('keydown', function(e) {
-            if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d"].indexOf(e.key) > -1) {
-                e.preventDefault();
-            }
-
-            let newX = player.x;
-            let newY = player.y;
-
-            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') newY--;
-            if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') newY++;
-            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') newX--;
-            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') newX++;
-
-            if (newY >= 0 && newY < ROWS && newX >= 0 && newX < COLS) {
