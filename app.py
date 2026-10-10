@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 
 # Cấu hình trang Streamlit
 st.set_page_config(
-    page_title="Pixel Dungeon: Detailed Hero & Epic Combat",
+    page_title="Pixel Dungeon: Idle Animation & Slash FX",
     page_icon="⚔️",
     layout="centered"
 )
@@ -24,15 +24,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: DETAILED HERO 🗡️</h1>", unsafe_allow_html=True)
-st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Nhân vật và vũ khí đã được thiết kế chi tiết sắc nét! Quái tự động đuổi theo bạn kể cả khi đứng yên.</div>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: ANIMATED COMBAT 🗡️</h1>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Nhân vật sẽ nhún nhẹ khi đứng yên và tạo vết chém sắc bén khi tấn công quái!</div>", unsafe_allow_html=True)
 
 game_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Detailed Hero Pixel Dungeon</title>
+    <title>Animated Pixel Dungeon</title>
     <style>
         body {
             background-color: #0b0b0e;
@@ -96,7 +96,7 @@ game_html = """
             floor: 1,
             keys: 0,
             weaponName: "Kiếm Gỗ Cũ",
-            weaponColor: "#cd6155",
+            weaponColor: "#784212",
             bladeColor: "#e59866",
             damage: 25
         };
@@ -105,6 +105,10 @@ game_html = """
         let monsters = [];
         let exitCoord = { x: 13, y: 8 };
         let monsterMoveTimer = null;
+        
+        // Biến quản lý hiệu ứng hoạt ảnh & vết chém
+        let idleCounter = 0;
+        let slashEffect = null; // Lưu thông tin vết chém {x, y, timer}
 
         // --- HỆ THỐNG ÂM THANH KỊCH TÍNH (EPIC BGM) ---
         let audioCtx = null;
@@ -165,18 +169,18 @@ game_html = """
         function updateWeapon() {
             if (player.keys >= 2) {
                 player.weaponName = "Thương Thần Thánh";
-                player.weaponColor = "#f39c12"; // Chuôi vàng
-                player.bladeColor = "#f1c40f";  // Lưỡi sáng rực
+                player.weaponColor = "#f39c12";
+                player.bladeColor = "#f1c40f";
                 player.damage = 65;
             } else if (player.keys === 1) {
                 player.weaponName = "Kiếm Sắt Sắc";
-                player.weaponColor = "#7f8c8d"; // Chuôi xám bạc
-                player.bladeColor = "#ecf0f1";  // Lưỡi thép sáng
+                player.weaponColor = "#7f8c8d";
+                player.bladeColor = "#ecf0f1";
                 player.damage = 40;
             } else {
                 player.weaponName = "Kiếm Gỗ Cũ";
-                player.weaponColor = "#784212"; // Chuôi gỗ
-                player.bladeColor = "#e59866";  // Lưỡi gỗ
+                player.weaponColor = "#784212";
+                player.bladeColor = "#e59866";
                 player.damage = 25;
             }
         }
@@ -323,8 +327,13 @@ game_html = """
                 if (tile !== 1) {
                     let mIndex = monsters.findIndex(m => m.x === newX && m.y === newY);
                     if (mIndex !== -1) {
+                        // Tấn công quái & Kích hoạt hiệu ứng vết chém
                         monsters[mIndex].hp -= player.damage;
                         player.score += 100;
+                        
+                        // Tạo hiệu ứng vết chém tại vị trí quái
+                        slashEffect = { x: newX, y: newY, timer: 6 };
+
                         if (monsters[mIndex].hp <= 0) {
                             monsters.splice(mIndex, 1);
                             player.score += 250;
@@ -352,6 +361,13 @@ game_html = """
 
             drawGame();
         });
+
+        // Hàm lặp render game liên tục để tạo hiệu ứng nhún nhảy (Idle Animation)
+        function gameLoop() {
+            idleCounter += 0.08;
+            drawGame();
+            requestAnimationFrame(gameLoop);
+        }
 
         // Hàm vẽ giao diện game
         function drawGame() {
@@ -419,46 +435,63 @@ game_html = """
                 ctx.fillRect(mx + 5, my + 2, Math.max(0, (m.hp / m.maxHp) * 30), 4);
             });
 
-            // 3. VẼ NHÂN VẬT CHÍNH CHI TIẾT SẮC NÉT (ÁO RA ÁO, KIẾM RA KIẾM)
+            // 3. Hiệu ứng vết chém (Slash Effect) khi tấn công quái
+            if (slashEffect && slashEffect.timer > 0) {
+                let sx = slashEffect.x * TILE_SIZE;
+                let sy = slashEffect.y * TILE_SIZE;
+                
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(sx + 8, sy + 8);
+                ctx.lineTo(sx + 32, sy + 32);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#f1c40f';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(sx + 32, sy + 8);
+                ctx.lineTo(sx + 8, sy + 32);
+                ctx.stroke();
+
+                slashEffect.timer--;
+            }
+
+            // 4. VẼ NHÂN VẬT CHÍNH CÓ HIỆU ỨNG NHÚN NHẠY (IDLE ANIMATION)
             let px = player.x * TILE_SIZE;
-            let py = player.y * TILE_SIZE;
+            // Hiệu ứng nhún lên nhún xuống nhẹ nhàng theo hàm sin
+            let bounce = Math.sin(idleCounter) * 2; 
+            let py = (player.y * TILE_SIZE) + bounce;
 
             // --- Áo choàng xanh thẫm phía sau ---
             ctx.fillStyle = '#1b4f72';
             ctx.fillRect(px + 10, py + 12, 20, 22);
 
-            // --- Giáp ngực sắt (Thân hiệp sĩ) ---
+            // --- Giáp ngực sắt ---
             ctx.fillStyle = '#bdc3c7';
             ctx.fillRect(px + 13, py + 14, 14, 14);
-            // Viền giáp nổi khối 3D
             ctx.fillStyle = '#7f8c8d';
             ctx.fillRect(px + 13, py + 14, 14, 3);
 
-            // --- Đầu & Mũ hiệp sĩ (Helmet) ---
+            // --- Đầu & Mũ hiệp sĩ ---
             ctx.fillStyle = '#566573';
             ctx.fillRect(px + 12, py + 6, 16, 10);
-            // Khe nhìn của mũ giáp (Màu đen ngầu)
             ctx.fillStyle = '#000000';
             ctx.fillRect(px + 15, py + 9, 10, 3);
-            // Lông vũ / đỉnh mũ trang trí
             ctx.fillStyle = '#e74c3c';
             ctx.fillRect(px + 18, py + 3, 4, 4);
 
-            // --- VŨ KHÍ TRÊN TAY CHI TIẾT (Kiếm / Thương) ---
-            // Cán kiếm / Chuôi kiếm
+            // --- Vũ khí trên tay ---
             ctx.fillStyle = player.weaponColor;
             ctx.fillRect(px + 27, py + 18, 4, 6);
-            // Chắn kiếm (Bảo vệ tay)
             ctx.fillStyle = '#f1c40f';
             ctx.fillRect(px + 25, py + 16, 8, 2);
-            // Lưỡi kiếm sắc bén phóng dài ra phía trước
             ctx.fillStyle = player.bladeColor;
             ctx.fillRect(px + 30, py + 8, 4, 12);
-            // Mũi kiếm sáng lấp lánh
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(px + 30, py + 6, 4, 3);
 
-            // 4. Vẽ khung giao diện HUD
+            // 5. Vẽ khung giao diện HUD
             ctx.fillStyle = 'rgba(15, 15, 20, 0.92)';
             ctx.fillRect(10, 10, 240, 100);
             ctx.strokeStyle = '#555';
@@ -487,7 +520,8 @@ game_html = """
             ctx.fillText('WEAPON: ' + player.weaponName, 20, 90);
         }
 
-        drawGame();
+        // Bắt đầu vòng lặp hoạt ảnh động
+        gameLoop();
     </script>
 </body>
 </html>
