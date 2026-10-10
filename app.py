@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 
 # Cấu hình trang Streamlit
 st.set_page_config(
-    page_title="Pixel Dungeon: Right-Handed Sword Stance",
+    page_title="Pixel Dungeon: Armed Hero",
     page_icon="⚔️",
     layout="centered"
 )
@@ -24,15 +24,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: BATTLE STANCE 🗡️</h1>", unsafe_allow_html=True)
-st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Nhân vật cầm kiếm lệch sang phải và nghiêng người theo hướng kiếm!</div>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON CRAWLER 🗡️</h1>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Nhân vật có hai tay cầm kiếm nghiêng sang phải cực kỳ rõ nét!</div>", unsafe_allow_html=True)
 
 game_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Right-Stance Pixel Dungeon</title>
+    <title>Pixel Dungeon Armed Hero</title>
     <style>
         body {
             background-color: #0b0b0e;
@@ -167,7 +167,6 @@ game_html = """
             }
         }
 
-        // Cập nhật vũ khí theo số chìa khóa
         function updateWeapon() {
             if (player.keys >= 2) {
                 player.weaponName = "Thương Thần Thánh";
@@ -196,7 +195,6 @@ game_html = """
             }
         }
 
-        // Tải bản đồ theo tầng
         function loadFloor(floorNum) {
             player.x = 1;
             player.y = 1;
@@ -265,7 +263,6 @@ game_html = """
 
         loadFloor(1);
 
-        // Quái di chuyển tự động thời gian thực
         function startMonsterAI() {
             if (monsterMoveTimer) clearInterval(monsterMoveTimer);
 
@@ -319,7 +316,6 @@ game_html = """
 
         startMonsterAI();
 
-        // Xử lý bàn phím
         window.addEventListener('keydown', function(e) {
             if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d"].indexOf(e.key) > -1) {
                 e.preventDefault();
@@ -371,190 +367,11 @@ game_html = """
             drawGame();
         });
 
-        // Vòng lặp hoạt ảnh
         function gameLoop() {
             idleCounter += 0.08;
             drawGame();
             requestAnimationFrame(gameLoop);
         }
 
-        // Vẽ đồ họa
         function drawGame() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // 1. Vẽ Map
-            for (let r = 0; r < ROWS; r++) {
-                for (let c = 0; c < COLS; c++) {
-                    let x = c * TILE_SIZE;
-                    let y = r * TILE_SIZE;
-
-                    if (currentMap[r][c] === 1) {
-                        ctx.fillStyle = player.floor === 2 ? '#1f4e5b' : (player.floor >= 3 ? '#5b1f1f' : '#2c223b');
-                        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-                        ctx.fillStyle = player.floor === 2 ? '#2874a6' : (player.floor >= 3 ? '#922b21' : '#3e3154');
-                        ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
-                    } else {
-                        ctx.fillStyle = '#1b1726';
-                        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-                        ctx.strokeStyle = '#252033';
-                        ctx.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
-                    }
-
-                    if (currentMap[r][c] === 2) {
-                        ctx.fillStyle = '#f1c40f';
-                        ctx.fillRect(x + 4, y + 4, TILE_SIZE - 8, TILE_SIZE - 8);
-                    }
-
-                    if (currentMap[r][c] === 3) {
-                        ctx.fillStyle = '#d35400';
-                        ctx.fillRect(x + 8, y + 12, 24, 18);
-                        ctx.fillStyle = '#f39c12';
-                        ctx.fillRect(x + 16, y + 18, 8, 6);
-                    }
-                }
-            }
-
-            // 2. Vẽ quái vật
-            monsters.forEach(function(m) {
-                let mx = m.x * TILE_SIZE;
-                let my = m.y * TILE_SIZE;
-
-                if (m.type === 'slime') {
-                    ctx.fillStyle = '#e74c3c';
-                    ctx.beginPath();
-                    ctx.arc(mx + 20, my + 25, 12, Math.PI, 0, false);
-                    ctx.fill();
-                } else if (m.type === 'bat') {
-                    ctx.fillStyle = '#9b59b6';
-                    ctx.fillRect(mx + 10, my + 15, 20, 10);
-                } else if (m.type === 'goblin') {
-                    ctx.fillStyle = '#27ae60';
-                    ctx.fillRect(mx + 12, my + 10, 16, 20);
-                } else if (m.type === 'spider') {
-                    ctx.fillStyle = '#34495e';
-                    ctx.fillRect(mx + 10, my + 12, 20, 14);
-                } else {
-                    ctx.fillStyle = '#e67e22';
-                    ctx.fillRect(mx + 8, my + 6, 24, 28);
-                }
-
-                ctx.fillStyle = '#000';
-                ctx.fillRect(mx + 5, my + 2, 30, 4);
-                ctx.fillStyle = '#e74c3c';
-                ctx.fillRect(mx + 5, my + 2, Math.max(0, (m.hp / m.maxHp) * 30), 4);
-            });
-
-            // 3. Hiệu ứng vết chém
-            if (slashEffect && slashEffect.timer > 0) {
-                let sx = slashEffect.x * TILE_SIZE;
-                let sy = slashEffect.y * TILE_SIZE;
-                
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 4;
-                ctx.beginPath();
-                ctx.moveTo(sx + 8, sy + 8);
-                ctx.lineTo(sx + 32, sy + 32);
-                ctx.stroke();
-
-                ctx.strokeStyle = '#f1c40f';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(sx + 32, sy + 8);
-                ctx.lineTo(sx + 8, sy + 32);
-                ctx.stroke();
-
-                slashEffect.timer--;
-            }
-
-            // 4. VẼ NHÂN VẬT CHÍNH (NGƯỜI NGHIÊNG SANG PHẢI, HAI TAY CẦM KIẾM LỆCH PHẢI)
-            let px = player.x * TILE_SIZE;
-            let bounce = Math.sin(idleCounter) * 2; 
-            let py = (player.y * TILE_SIZE) + bounce;
-
-            // Chân nhún nhảy lệch phải một chút theo thân người
-            ctx.fillStyle = '#117864';
-            let legOffset = Math.sin(idleCounter * 2) > 0 ? 1 : -1;
-            ctx.fillRect(px + 12, py + 30, 4, 6 + legOffset);
-            ctx.fillRect(px + 20, py + 30, 4, 6 - legOffset);
-
-            // Áo choàng (nghiêng sang phải)
-            ctx.fillStyle = '#1b4f72';
-            ctx.fillRect(px + 8, py + 12, 18, 20);
-
-            // Giáp ngực (dịch chuyển sang phải tạo góc nghiêng)
-            ctx.fillStyle = '#bdc3c7';
-            ctx.fillRect(px + 12, py + 14, 15, 14);
-            ctx.fillStyle = '#7f8c8d';
-            ctx.fillRect(px + 12, py + 14, 15, 3);
-
-            // Mũ giáp
-            ctx.fillStyle = '#566573';
-            ctx.fillRect(px + 12, py + 6, 15, 10);
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(px + 14, py + 9, 9, 3);
-            ctx.fillStyle = '#e74c3c';
-            ctx.fillRect(px + 16, py + 3, 4, 4);
-
-            // --- HAI TAY VÀ THANH KIẾM LỆCH PHẢI, HƯỚNG VỀ PHÁT KIẾM ---
-            ctx.fillStyle = '#bdc3c7'; // Tay trái vươn sang phải
-            ctx.fillRect(px + 22, py + 16, 6, 4);
-            ctx.fillStyle = '#bdc3c7'; // Tay phải giữ cán
-            ctx.fillRect(px + 25, py + 20, 5, 4);
-
-            // --- CẤU TRÚC KIẾM LỆCH PHẢI HOÀN CHỈNH ---
-            // 1. Đế kiếm
-            ctx.fillStyle = player.pommelColor;
-            ctx.fillRect(px + 27, py + 26, 4, 3);
-            // 2. Chuôi cầm
-            ctx.fillStyle = player.hiltColor;
-            ctx.fillRect(px + 27, py + 20, 4, 6);
-            // 3. Chắn kiếm
-            ctx.fillStyle = player.guardColor;
-            ctx.fillRect(px + 24, py + 18, 10, 3);
-            // 4. Thân lưỡi kiếm
-            ctx.fillStyle = player.bladeColor;
-            ctx.fillRect(px + 27, py + 8, 4, 10);
-            // 5. Mũi kiếm
-            ctx.fillStyle = player.tipColor;
-            ctx.beginPath();
-            ctx.moveTo(px + 27, py + 8);
-            ctx.lineTo(px + 29, py + 3);
-            ctx.lineTo(px + 31, py + 8);
-            ctx.fill();
-
-            // 5. Khung giao diện HUD
-            ctx.fillStyle = 'rgba(15, 15, 20, 0.92)';
-            ctx.fillRect(10, 10, 240, 100);
-            ctx.strokeStyle = '#555';
-            ctx.strokeRect(10, 10, 240, 100);
-
-            ctx.fillStyle = '#c0392b';
-            ctx.fillRect(20, 18, 160, 16);
-            ctx.fillStyle = '#2ecc71';
-            let hpW = Math.max(0, (player.hp / player.maxHp) * 160);
-            ctx.fillRect(20, 18, hpW, 16);
-            
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 11px "Courier New"';
-            ctx.fillText('HP: ' + Math.max(0, player.hp) + '/' + player.maxHp, 26, 30);
-
-            ctx.fillStyle = '#f1c40f';
-            ctx.fillText('SCORE: ' + player.score, 20, 48);
-            
-            ctx.fillStyle = '#3498db';
-            ctx.fillText('FLOOR: ' + player.floor + 'F', 140, 48);
-            
-            ctx.fillStyle = '#e67e22';
-            ctx.fillText('KEYS: ' + player.keys, 20, 68);
-
-            ctx.fillStyle = player.bladeColor;
-            ctx.fillText('WEAPON: ' + player.weaponName, 20, 90);
-        }
-
-        gameLoop();
-    </script>
-</body>
-</html>
-"""
-
-components.html(game_html, height=490)
+            ctx
