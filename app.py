@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 
 # Cấu hình trang Streamlit
 st.set_page_config(
-    page_title="Pixel Dungeon: Floor Weapons Evolution",
+    page_title="Pixel Dungeon: 10 Floors to Victory",
     page_icon="⚔️",
     layout="centered"
 )
@@ -24,15 +24,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: FLOOR WEAPONS 🗡️</h1>", unsafe_allow_html=True)
-st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Mỗi khi xuống tầng mới, bạn sẽ tự động nhận được Vũ khí mới cực mạnh!</div>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: 10 FLOORS TO VICTORY 🗡️</h1>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Chinh phục đủ 10 tầng hầm ngục để phá đảo giải cứu thế giới!</div>", unsafe_allow_html=True)
 
 game_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Floor Weapons Pixel Dungeon</title>
+    <title>10 Floors Pixel Dungeon</title>
     <style>
         body {
             background-color: #050508;
@@ -82,9 +82,6 @@ game_html = """
     <button id="audio-btn" onclick="toggleAudio()">🔥 Bật / Tắt Nhạc Hầm Ngục Epic</button>
 
     <script>
-        /* ==========================================================
-           1. CORE ENGINE & KHỞI TẠO GAME (HƠN 500 DÒNG CODE CHUẨN)
-           ========================================================== */
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
@@ -95,38 +92,36 @@ game_html = """
         let player = {
             x: 1,
             y: 1,
-            hp: 120,
-            maxHp: 120,
+            hp: 150,
+            maxHp: 150,
             score: 0,
             floor: 1,
-            lvl: 1,
             keys: 0,
-            // Trang phục mặc định
             armorName: "Giáp Tập Sự",
             cloakColor: "#1b4f72",
             armorColor: "#bdc3c7",
             helmetColor: "#566573",
             featherColor: "#e74c3c",
-            // Vũ khí mặc định
-            weaponName: "Kiếm Gỗ Cũ",
+            weaponName: "🪵 Kiếm Gỗ Cũ",
             pommelColor: "#512e5f",
             hiltColor: "#784212",
             guardColor: "#d35400",
             bladeColor: "#e59866",
             tipColor: "#f5b041",
-            damage: 30
+            damage: 35
         };
 
         let currentMap = [];
         let monsters = [];
         let exitCoord = { x: 13, y: 8 };
         let monsterMoveTimer = null;
+        let gameWon = false;
         
         let idleCounter = 0;
         let slashEffect = null;
         let floatingTexts = [];
 
-        // --- HỆ THỐNG ÂM THANH CHIPTUNE 8-BIT (WEB AUDIO API) ---
+        // --- ÂM THANH CHIPTUNE 8-BIT ---
         let audioCtx = null;
         let isPlayingBGM = false;
         let bgmInterval = null;
@@ -181,65 +176,68 @@ game_html = """
             }
         }
 
-        /* ==========================================================
-           2. HỆ THỐNG TRANG BỊ VŨ KHÍ MỚI THEO TẦNG (FLOOR WEAPONS)
-           ========================================================== */
+        // --- HỆ THỐNG VŨ KHÍ VÀ TRANG PHỤC TIẾN HÓA QUA 10 TẦNG ---
         function updateFloorGear() {
-            if (player.floor >= 3) {
-                // Tầng 3+: Vũ khí Tối Thượng & Giáp Chiến Thần
-                player.armorName = "Giáp Chiến Thần";
+            if (player.floor >= 9) {
+                player.armorName = "Giáp Ánh Sáng Tối Thượng";
+                player.cloakColor = "#f1c40f";
+                player.armorColor = "#ffffff";
+                player.helmetColor = "#d4ac0d";
+                player.featherColor = "#e74c3c";
+                player.weaponName = "👑 Kiếm Thần Excalibur";
+                player.pommelColor = "#7d3c98";
+                player.hiltColor = "#f1c40f";
+                player.guardColor = "#c0392b";
+                player.bladeColor = "#ffffff";
+                player.tipColor = "#f39c12";
+                player.damage = 120;
+            } else if (player.floor >= 6) {
+                player.armorName = "Giáp Huyết Long";
                 player.cloakColor = "#78281f";
-                player.armorColor = "#f1c40f";
-                player.helmetColor = "#7b241c";
-                player.featherColor = "#ffffff";
-                
-                player.weaponName = "⚡ Thương Ánh Sáng Tối Thượng";
-                player.pommelColor = "#4a235a";
-                player.hiltColor = "#d4ac0d";
-                player.guardColor = "#78281f";
-                player.bladeColor = "#f1c40f";
-                player.tipColor = "#ffffff";
-                player.damage = 80;
-            } else if (player.floor === 2) {
-                // Tầng 2: Vũ khí Cấp 2 (Kiếm Sắt Rồng) & Giáp Hoàng Gia
+                player.armorColor = "#e74c3c";
+                player.helmetColor = "#641e16";
+                player.featherColor = "#f1c40f";
+                player.weaponName = "🔥 Thương Lửa Địa Ngục";
+                player.pommelColor = "#512e5f";
+                player.hiltColor = "#d35400";
+                player.guardColor = "#922b21";
+                player.bladeColor = "#e67e22";
+                player.tipColor = "#f1c40f";
+                player.damage = 90;
+            } else if (player.floor >= 3) {
                 player.armorName = "Giáp Hoàng Gia";
                 player.cloakColor = "#117864";
                 player.armorColor = "#85c1e9";
                 player.helmetColor = "#2e4053";
                 player.featherColor = "#f39c12";
-                
                 player.weaponName = "🗡️ Kiếm Sắt Long Huyết";
                 player.pommelColor = "#2c3e50";
                 player.hiltColor = "#117864";
                 player.guardColor = "#5d6d7e";
                 player.bladeColor = "#a9cce3";
                 player.tipColor = "#ffffff";
-                player.damage = 50;
+                player.damage = 60;
             } else {
-                // Tầng 1: Vũ khí Khởi Đầu (Kiếm Gỗ Cũ) & Giáp Tập Sự
                 player.armorName = "Giáp Tập Sự";
                 player.cloakColor = "#1b4f72";
                 player.armorColor = "#bdc3c7";
                 player.helmetColor = "#566573";
                 player.featherColor = "#e74c3c";
-                
                 player.weaponName = "🪵 Kiếm Gỗ Cũ Sơ Khai";
                 player.pommelColor = "#512e5f";
                 player.hiltColor = "#784212";
                 player.guardColor = "#d35400";
                 player.bladeColor = "#e59866";
                 player.tipColor = "#f5b041";
-                player.damage = 30;
+                player.damage = 35;
             }
         }
 
-        /* ==========================================================
-           3. HỆ THỐNG MAP & QUÁI VẬT THEO TẦNG
-           ========================================================== */
+        // --- HỆ THỐNG SINH 10 MAP KHÁC NHAU ---
         function loadFloor(floorNum) {
             player.x = 1;
             player.y = 1;
-            updateFloorGear(); // Tự động đổi vũ khí mới theo tầng!
+            updateFloorGear();
 
             if (floorNum === 1) {
                 currentMap = [
@@ -255,31 +253,23 @@ game_html = """
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
                 ];
                 exitCoord = { x: 13, y: 1 };
-                monsters = [
-                    { x: 12, y: 5, hp: 40, maxHp: 40, type: 'slime' },
-                    { x: 6, y: 3, hp: 35, maxHp: 35, type: 'bat' },
-                    { x: 3, y: 7, hp: 45, maxHp: 45, type: 'slime' }
-                ];
+                monsters = [{ x: 12, y: 5, hp: 40, maxHp: 40, type: 'slime' }, { x: 6, y: 3, hp: 35, maxHp: 35, type: 'bat' }];
             } else if (floorNum === 2) {
                 currentMap = [
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-                    [1,0,1,0,0,0,1,0,0,0,3,0,0,0,1],
+                    [1,0,1,0,0,0,1,0,0,0,3,0,0,2,1],
                     [1,0,1,1,1,0,1,0,1,1,1,1,1,0,1],
                     [1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],
                     [1,1,1,0,1,1,1,0,1,0,1,0,1,0,1],
-                    [1,3,0,0,0,0,1,0,0,0,1,0,0,2,1],
+                    [1,3,0,0,0,0,1,0,0,0,1,0,0,0,1],
                     [1,0,1,1,1,0,1,1,1,1,1,1,1,0,1],
-                    [1,0,0,0,1,0,0,0,0,0,0,0,1,0,1],
-                    [1,1,1,0,3,1,1,1,1,1,1,0,3,0,1],
+                    [1,0,0,0,1,0,0,0,0,0,0,0,1,3,1],
+                    [1,1,1,0,3,1,1,1,1,1,1,0,0,0,1],
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
                 ];
-                exitCoord = { x: 13, y: 5 };
-                monsters = [
-                    { x: 7, y: 3, hp: 75, maxHp: 75, type: 'goblin' },
-                    { x: 3, y: 5, hp: 65, maxHp: 65, type: 'spider' },
-                    { x: 11, y: 7, hp: 80, maxHp: 80, type: 'goblin' }
-                ];
-            } else {
+                exitCoord = { x: 13, y: 1 };
+                monsters = [{ x: 7, y: 3, hp: 60, maxHp: 60, type: 'goblin' }, { x: 3, y: 5, hp: 55, maxHp: 55, type: 'spider' }];
+            } else if (floorNum === 3) {
                 currentMap = [
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                     [1,0,0,0,0,0,1,3,0,0,0,0,1,2,1],
@@ -293,24 +283,126 @@ game_html = """
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
                 ];
                 exitCoord = { x: 13, y: 1 };
-                monsters = [
-                    { x: 7, y: 4, hp: 130, maxHp: 130, type: 'golem' },
-                    { x: 3, y: 1, hp: 110, maxHp: 110, type: 'demon' },
-                    { x: 13, y: 7, hp: 120, maxHp: 120, type: 'demon' }
+                monsters = [{ x: 7, y: 4, hp: 80, maxHp: 80, type: 'golem' }, { x: 3, y: 1, hp: 70, maxHp: 70, type: 'demon' }];
+            } else if (floorNum === 4) {
+                currentMap = [
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                    [1,0,1,1,0,0,0,0,0,1,1,1,3,2,1],
+                    [1,0,1,1,0,1,1,1,0,1,1,1,0,0,1],
+                    [1,0,0,0,0,1,3,1,0,0,0,0,0,1,1],
+                    [1,1,1,0,1,1,0,1,1,0,1,1,0,1,1],
+                    [1,3,0,0,0,0,0,0,0,0,0,1,0,0,1],
+                    [1,1,1,0,1,1,0,1,1,0,1,1,1,0,1],
+                    [1,0,0,0,1,1,0,1,1,0,1,3,0,0,1],
+                    [1,0,1,1,1,1,0,1,1,0,1,1,1,0,1],
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
                 ];
+                exitCoord = { x: 13, y: 1 };
+                monsters = [{ x: 6, y: 5, hp: 100, maxHp: 100, type: 'goblin' }, { x: 12, y: 7, hp: 90, maxHp: 90, type: 'demon' }];
+            } else if (floorNum === 5) {
+                currentMap = [
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                    [1,0,0,0,1,3,0,0,0,3,1,0,0,2,1],
+                    [1,0,1,0,1,1,1,0,1,1,1,0,1,0,1],
+                    [1,0,1,0,0,0,0,0,0,0,0,0,1,0,1],
+                    [1,0,1,1,1,0,1,1,1,0,1,1,1,0,1],
+                    [1,0,0,0,0,0,1,3,1,0,0,0,0,0,1],
+                    [1,1,1,0,1,1,1,0,1,1,1,0,1,1,1],
+                    [1,3,0,0,0,0,0,0,0,0,0,0,3,0,1],
+                    [1,0,1,1,1,0,1,1,1,0,1,1,1,0,1],
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+                ];
+                exitCoord = { x: 13, y: 1 };
+                monsters = [{ x: 7, y: 3, hp: 120, maxHp: 120, type: 'golem' }, { x: 3, y: 7, hp: 110, maxHp: 110, type: 'demon' }];
+            } else if (floorNum === 6) {
+                currentMap = [
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                    [1,0,1,0,0,0,0,1,0,0,0,0,1,2,1],
+                    [1,0,1,1,1,1,0,1,0,1,1,1,1,0,1],
+                    [1,0,0,0,0,1,0,0,0,1,3,0,0,0,1],
+                    [1,1,1,0,1,1,1,1,0,1,1,1,1,0,1],
+                    [1,3,0,0,0,0,3,1,0,0,0,0,1,0,1],
+                    [1,1,1,0,1,1,1,1,0,1,1,0,1,0,1],
+                    [1,0,0,0,0,0,0,0,0,1,1,0,0,3,1],
+                    [1,0,1,1,1,1,1,1,1,1,1,1,1,0,1],
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+                ];
+                exitCoord = { x: 13, y: 1 };
+                monsters = [{ x: 5, y: 3, hp: 140, maxHp: 140, type: 'demon' }, { x: 8, y: 7, hp: 130, maxHp: 130, type: 'golem' }];
+            } else if (floorNum === 7) {
+                currentMap = [
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                    [1,0,0,0,1,3,0,1,0,3,1,0,0,2,1],
+                    [1,0,1,0,1,1,0,1,0,1,1,0,1,0,1],
+                    [1,0,1,0,0,0,0,0,0,0,0,0,1,0,1],
+                    [1,0,1,1,1,0,1,1,1,0,1,1,1,0,1],
+                    [1,0,0,0,0,0,1,0,1,0,0,0,0,0,1],
+                    [1,1,1,0,1,1,1,0,1,1,1,0,1,1,1],
+                    [1,3,0,0,0,0,0,0,0,0,0,0,3,0,1],
+                    [1,0,1,1,1,0,1,1,1,0,1,1,1,0,1],
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+                ];
+                exitCoord = { x: 13, y: 1 };
+                monsters = [{ x: 6, y: 5, hp: 160, maxHp: 160, type: 'demon' }, { x: 12, y: 7, hp: 150, maxHp: 150, type: 'golem' }];
+            } else if (floorNum === 8) {
+                currentMap = [
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                    [1,0,1,0,0,0,1,0,0,0,1,3,0,2,1],
+                    [1,0,1,1,1,0,1,0,1,1,1,1,1,0,1],
+                    [1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],
+                    [1,1,1,0,1,1,1,0,1,0,1,0,1,0,1],
+                    [1,3,0,0,0,0,1,0,0,0,1,0,0,3,1],
+                    [1,0,1,1,1,0,1,1,1,1,1,1,1,0,1],
+                    [1,0,0,0,1,0,0,0,0,0,0,0,1,0,1],
+                    [1,1,1,0,3,1,1,1,1,1,1,0,0,0,1],
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+                ];
+                exitCoord = { x: 13, y: 1 };
+                monsters = [{ x: 7, y: 3, hp: 180, maxHp: 180, type: 'demon' }, { x: 3, y: 5, hp: 170, maxHp: 170, type: 'golem' }];
+            } else if (floorNum === 9) {
+                currentMap = [
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                    [1,0,0,0,0,0,0,3,0,0,0,0,1,2,1],
+                    [1,0,1,1,1,1,0,1,0,1,1,1,1,0,1],
+                    [1,0,1,3,0,0,0,1,0,0,0,3,1,0,1],
+                    [1,0,1,0,1,1,1,1,1,1,0,1,1,0,1],
+                    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                    [1,1,1,1,1,1,0,1,1,1,1,1,1,0,1],
+                    [1,3,0,0,0,0,0,0,0,0,0,0,3,0,1],
+                    [1,0,1,1,1,1,1,1,1,1,1,1,1,0,1],
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+                ];
+                exitCoord = { x: 13, y: 1 };
+                monsters = [{ x: 7, y: 4, hp: 200, maxHp: 200, type: 'demon' }, { x: 3, y: 1, hp: 190, maxHp: 190, type: 'demon' }];
+            } else {
+                // Tầng 10: Sào huyệt trùm cuối (Boss Lvl 10)
+                currentMap = [
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                    [1,0,0,0,0,0,0,3,0,0,0,0,0,2,1],
+                    [1,0,1,1,1,1,1,1,1,1,1,1,1,0,1],
+                    [1,0,1,0,0,0,0,0,0,0,0,0,1,0,1],
+                    [1,0,1,0,1,1,1,1,1,1,1,0,1,0,1],
+                    [1,0,1,0,1,0,0,0,0,0,1,0,1,0,1],
+                    [1,0,1,0,1,0,3,0,3,0,1,0,1,0,1],
+                    [1,0,1,0,1,1,1,1,1,1,1,0,1,0,1],
+                    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+                ];
+                exitCoord = { x: 13, y: 1 };
+                monsters = [{ x: 7, y: 5, hp: 350, maxHp: 350, type: 'demon' }]; // Boss Cuối
             }
             currentMap[exitCoord.y][exitCoord.x] = 2;
         }
 
         loadFloor(1);
 
-        /* ==========================================================
-           4. HỆ THỐNG AI & DI CHUYỂN THỜI GIAN THỰC CỦA QUÁI
-           ========================================================== */
+        // --- AI QUÁI VẬT THỜI GIAN THỰC ---
         function startMonsterAI() {
             if (monsterMoveTimer) clearInterval(monsterMoveTimer);
 
             monsterMoveTimer = setInterval(function() {
+                if (gameWon) return;
+
                 monsters.forEach(function(m) {
                     let possibleMoves = [];
                     let directions = [
@@ -341,17 +433,15 @@ game_html = """
 
                 monsters.forEach(function(m) {
                     if (Math.abs(m.x - player.x) + Math.abs(m.y - player.y) === 1) {
-                        let monsterDmg = 10 + (player.floor * 4);
+                        let monsterDmg = 12 + (player.floor * 3);
                         player.hp -= monsterDmg;
                         floatingTexts.push({ text: "-" + monsterDmg, x: player.x * TILE_SIZE + 10, y: player.y * TILE_SIZE, color: '#e74c3c', timer: 25 });
                         
                         if (player.hp <= 0) {
-                            alert("💀 GAME OVER! Bạn đã hy sinh ở Tầng " + player.floor + ". Điểm số cuối cùng: " + player.score);
-                            player.hp = 120;
-                            player.maxHp = 120;
+                            alert("💀 GAME OVER! Bạn đã ngã xuống ở Tầng " + player.floor + ". Điểm: " + player.score);
+                            player.hp = 150;
                             player.score = 0;
                             player.floor = 1;
-                            player.lvl = 1;
                             player.keys = 0;
                             loadFloor(1);
                         }
@@ -364,10 +454,10 @@ game_html = """
 
         startMonsterAI();
 
-        /* ==========================================================
-           5. SỰ KIỆN BÀN PHÍM & ĐIỀU KHIỂN
-           ========================================================== */
+        // --- ĐIỀU KHIỂN BÀN PHÍM ---
         window.addEventListener('keydown', function(e) {
+            if (gameWon) return;
+
             if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d"].indexOf(e.key) > -1) {
                 e.preventDefault();
             }
@@ -387,25 +477,30 @@ game_html = """
                     let mIndex = monsters.findIndex(m => m.x === newX && m.y === newY);
                     if (mIndex !== -1) {
                         monsters[mIndex].hp -= player.damage;
-                        player.score += 150;
+                        player.score += 200;
                         slashEffect = { x: newX, y: newY, timer: 6 };
                         floatingTexts.push({ text: "-" + player.damage, x: newX * TILE_SIZE + 10, y: newY * TILE_SIZE, color: '#f1c40f', timer: 25 });
 
                         if (monsters[mIndex].hp <= 0) {
                             monsters.splice(mIndex, 1);
-                            player.score += 350;
+                            player.score += 500;
                         }
                     } else if (tile === 3) {
-                        player.score += 500;
+                        player.score += 600;
                         player.keys += 1;
-                        player.hp = Math.min(player.maxHp, player.hp + 45);
+                        player.hp = Math.min(player.maxHp, player.hp + 50);
                         currentMap[newY][newX] = 0;
-                        floatingTexts.push({ text: "+45 HP", x: newX * TILE_SIZE, y: newY * TILE_SIZE, color: '#2ecc71', timer: 30 });
+                        floatingTexts.push({ text: "+50 HP", x: newX * TILE_SIZE, y: newY * TILE_SIZE, color: '#2ecc71', timer: 30 });
                     } else if (tile === 2) {
-                        // Xuống tầng mới -> Nhận Vũ Khí Mới!
+                        if (player.floor >= 10) {
+                            gameWon = true;
+                            stopBGM();
+                            drawGame();
+                            return;
+                        }
                         player.floor++;
-                        player.score += 1200;
-                        alert("⚡ BƯỚC XUỐNG TẦNG " + player.floor + "! Bạn nhận được vũ khí mới: " + player.weaponName);
+                        player.score += 2000;
+                        alert("⚡ BƯỚC XUỐNG TẦNG " + player.floor + "! Vũ khí tiến hóa: " + player.weaponName);
                         loadFloor(player.floor);
                         startMonsterAI();
                         drawGame();
@@ -426,11 +521,26 @@ game_html = """
             requestAnimationFrame(gameLoop);
         }
 
-        /* ==========================================================
-           6. RENDER ĐỒ HỌA PIXEL ART (HƠN 500 DÒNG HOÀN CHỈNH)
-           ========================================================== */
+        // --- RENDER ĐỒ HỌA ---
         function drawGame() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Màn hình Phá đảo (Victory Screen)
+            if (gameWon) {
+                ctx.fillStyle = '#0b0b0e';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#f1c40f';
+                ctx.font = 'bold 28px "Courier New"';
+                ctx.textAlign = 'center';
+                ctx.fillText('👑 CHIẾN THẮNG - PHÁ ĐẢO! 👑', canvas.width / 2, 130);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 16px "Courier New"';
+                ctx.fillText('Bạn đã vượt qua cả 10 Tầng Hầm Ngục!', canvas.width / 2, 180);
+                ctx.fillText('Điểm số cuối cùng: ' + player.score, canvas.width / 2, 220);
+                ctx.fillStyle = '#2ecc71';
+                ctx.fillText('Cảm ơn bạn đã giải cứu thế giới!', canvas.width / 2, 270);
+                return;
+            }
 
             // 1. Vẽ Map
             for (let r = 0; r < ROWS; r++) {
@@ -439,9 +549,9 @@ game_html = """
                     let y = r * TILE_SIZE;
 
                     if (currentMap[r][c] === 1) {
-                        ctx.fillStyle = player.floor === 2 ? '#1f4e5b' : (player.floor >= 3 ? '#5b1f1f' : '#2c223b');
+                        ctx.fillStyle = player.floor >= 8 ? '#4a1515' : (player.floor >= 4 ? '#1f4e5b' : '#2c223b');
                         ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-                        ctx.fillStyle = player.floor === 2 ? '#2874a6' : (player.floor >= 3 ? '#922b21' : '#3e3154');
+                        ctx.fillStyle = player.floor >= 8 ? '#922b21' : (player.floor >= 4 ? '#2874a6' : '#3e3154');
                         ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
                     } else {
                         ctx.fillStyle = '#1b1726';
@@ -484,8 +594,8 @@ game_html = """
                     ctx.fillStyle = '#34495e';
                     ctx.fillRect(mx + 10, my + 12, 20, 14);
                 } else {
-                    ctx.fillStyle = '#e67e22';
-                    ctx.fillRect(mx + 8, my + 6, 24, 28);
+                    ctx.fillStyle = player.floor === 10 ? '#ff0000' : '#e67e22';
+                    ctx.fillRect(mx + 6, my + 4, 28, 30);
                 }
 
                 ctx.fillStyle = '#000';
@@ -597,7 +707,7 @@ game_html = """
             ctx.fillText('HP: ' + Math.max(0, player.hp) + '/' + player.maxHp, 26, 30);
 
             ctx.fillStyle = '#f1c40f';
-            ctx.fillText('FLOOR: ' + player.floor + 'F | KEYS: ' + player.keys, 20, 48);
+            ctx.fillText('FLOOR: ' + player.floor + '/10 F | KEYS: ' + player.keys, 20, 48);
             
             ctx.fillStyle = '#3498db';
             ctx.fillText('SCORE: ' + player.score, 20, 68);
