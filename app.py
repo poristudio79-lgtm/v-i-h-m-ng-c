@@ -5,7 +5,7 @@ import streamlit.components.v1 as components
 
 # Cấu hình trang Streamlit
 st.set_page_config(
-    page_title="Pixel Dungeon: Complete Edition",
+    page_title="Pixel Dungeon: 10 Unique Gears Edition",
     page_icon="⚔️",
     layout="centered"
 )
@@ -26,15 +26,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: ULTIMATE RPG 🗡️</h1>", unsafe_allow_html=True)
-st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Qua màn mới sẽ xuất hiện menu chọn Đổi Vũ Khí hoặc Qua Tầng! Phá đảo ở Tầng 10!</div>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: 10 GEARS & FLOORS 🗡️</h1>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Mỗi tầng tương ứng với 1 Bộ Giáp & 1 Thanh Kiếm huyền thoại riêng biệt! Phá đảo ở Tầng 10!</div>", unsafe_allow_html=True)
 
 game_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Pixel Dungeon Complete</title>
+    <title>Pixel Dungeon 10 Unique Gears</title>
     <style>
         body {
             background-color: #050508;
@@ -100,17 +100,18 @@ game_html = """
             score: 0,
             floor: 1,
             keys: 0,
-            armorName: "Giáp Tập Sự",
-            cloakColor: "#1b4f72",
-            armorColor: "#bdc3c7",
-            helmetColor: "#566573",
-            featherColor: "#e74c3c",
-            weaponName: "🪵 Kiếm Gỗ Cũ Sơ Khai",
-            pommelColor: "#512e5f",
-            hiltColor: "#784212",
-            guardColor: "#d35400",
-            bladeColor: "#e59866",
-            tipColor: "#f5b041",
+            // Sẽ được cập nhật tự động theo từng tầng
+            armorName: "",
+            cloakColor: "",
+            armorColor: "",
+            helmetColor: "",
+            featherColor: "",
+            weaponName: "",
+            pommelColor: "",
+            hiltColor: "",
+            guardColor: "",
+            bladeColor: "",
+            tipColor: "",
             damage: 35
         };
 
@@ -125,7 +126,7 @@ game_html = """
         let slashEffect = null;
         let floatingTexts = [];
 
-        // --- HỆ THỐNG ÂM THANH CHIPTUNE 8-BIT ---
+        // --- ÂM THANH CHIPTUNE 8-BIT ---
         let audioCtx = null;
         let isPlayingBGM = false;
         let bgmInterval = null;
@@ -180,31 +181,92 @@ game_html = """
             }
         }
 
-        // --- DANH SÁCH VŨ KHÍ KHI ĐỔI ---
-        const availableWeapons = [
-            { name: "🪵 Kiếm Gỗ Cũ", damage: 35, pommel: "#512e5f", hilt: "#784212", guard: "#d35400", blade: "#e59866", tip: "#f5b041" },
-            { name: "🗡️ Kiếm Sắt Sắc Bén", damage: 65, pommel: "#2c3e50", hilt: "#7f8c8d", guard: "#bdc3c7", blade: "#ecf0f1", tip: "#ffffff" },
-            { name: "⚔️ Song Kiếm Phủ Sương", damage: 95, pommel: "#1b4f72", hilt: "#2874a6", guard: "#5499c7", blade: "#85c1e9", tip: "#d4efdf" },
-            { name: "🔥 Thương Lửa Địa Ngục", damage: 130, pommel: "#78281f", hilt: "#d35400", guard: "#922b21", blade: "#e67e22", tip: "#f1c40f" },
-            { name: "👑 Kiếm Thần Excalibur", damage: 170, pommel: "#7d3c98", hilt: "#f1c40f", guard: "#c0392b", blade: "#ffffff", tip: "#f39c12" }
+        // --- 10 BỘ GIÁP VÀ 10 THANH KIẾM HOÀN TOÀN KHÁC NHAU CHO 10 TẦNG ---
+        const floorGearDatabase = {
+            1: {
+                armorName: "Giáp Tập Sự", cloak: "#1b4f72", armor: "#bdc3c7", helmet: "#566573", feather: "#e74c3c",
+                weaponName: "🪵 Kiếm Gỗ Sơ Khai", damage: 35, pommel: "#512e5f", hilt: "#784212", guard: "#d35400", blade: "#e59866", tip: "#f5b041"
+            },
+            2: {
+                armorName: "Giáp Da Rừng Sâu", cloak: "#145a32", armor: "#7d6608", helmet: "#4d5656", feather: "#2ecc71",
+                weaponName: "🗡️ Dao Găm Thợ Săn", damage: 50, pommel: "#1b4f72", hilt: "#7d6608", guard: "#b7950b", blade: "#a6acaf", tip: "#ffffff"
+            },
+            3: {
+                armorName: "Giáp Đồng Cổ Kính", cloak: "#78281f", armor: "#d35400", helmet: "#641e16", feather: "#f1c40f",
+                weaponName: "⚔️ Kiếm Đồng Cổ", damage: 70, pommel: "#641e16", hilt: "#b9770e", guard: "#d35400", blade: "#f39c12", tip: "#fcf3cf"
+            },
+            4: {
+                armorName: "Giáp Sắt Kiên Cố", cloak: "#2e4053", armor: "#85c1e9", helmet: "#1b4f72", feather: "#3498db",
+                weaponName: "🗡️ Kiếm Sắt Sắc Bén", damage: 90, pommel: "#2c3e50", hilt: "#5d6d7e", guard: "#85c1e9", blade: "#ecf0f1", tip: "#ffffff"
+            },
+            5: {
+                armorName: "Giáp Bạc Ánh Trăng", cloak: "#512e5f", armor: "#d7bde2", helmet: "#4a235a", feather: "#bb8fce",
+                weaponName: "🌙 Ngân Kiếm Ánh Trăng", damage: 115, pommel: "#4a235a", hilt: "#8e44ad", guard: "#d7bde2", blade: "#f4ecf7", tip: "#ffffff"
+            },
+            6: {
+                armorName: "Giáp Vàng Hoàng Gia", cloak: "#7d3c98", armor: "#f1c40f", helmet: "#7e5109", feather: "#e74c3c",
+                weaponName: "⚡ Kiếm Vàng Hoàng Gia", damage: 140, pommel: "#512e5f", hilt: "#d4ac0d", guard: "#f1c40f", blade: "#fcf3cf", tip: "#ffffff"
+            },
+            7: {
+                armorName: "Giáp Huyết Long", cloak: "#641e16", armor: "#c0392b", helmet: "#512e5f", feather: "#f39c12",
+                weaponName: "🔥 Thương Huyết Long", damage: 170, pommel: "#512e5f", hilt: "#922b21", guard: "#c0392b", blade: "#e74c3c", tip: "#f1c40f"
+            },
+            8: {
+                armorName: "Giáp Băng Giá Tận Thế", cloak: "#1b4f72", armor: "#a9cce3", helmet: "#154360", feather: "#ffffff",
+                weaponName: "❄️ Băng Kiếm Vĩnh Cửu", damage: 200, pommel: "#154360", hilt: "#2980b9", guard: "#a9cce3", blade: "#ebf5fb", tip: "#ffffff"
+            },
+            9: {
+                armorName: "Giáp Bóng Đêm Tối Thượng", cloak: "#111111", armor: "#34495e", helmet: "#000000", feather: "#9b59b6",
+                weaponName: "💀 Hắc Kiếm Vô Thường", damage: 240, pommel: "#000000", hilt: "#2c3e50", guard: "#8e44ad", blade: "#5d6d7e", tip: "#bb8fce"
+            },
+            10: {
+                armorName: "Giáp Thần Thánh Tối Thượng", cloak: "#7d3c98", armor: "#ffffff", helmet: "#d4ac0d", feather: "#e74c3c",
+                weaponName: "👑 Kiếm Thần Excalibur", damage: 300, pommel: "#512e5f", hilt: "#f1c40f", guard: "#c0392b", blade: "#ffffff", tip: "#f39c12"
+            }
+        };
+
+        function updatePlayerGear(floorNum) {
+            let gear = floorGearDatabase[floorNum] || floorGearDatabase[1];
+            player.armorName = gear.armorName;
+            player.cloakColor = gear.cloak;
+            player.armorColor = gear.armor;
+            player.helmetColor = gear.helmet;
+            player.featherColor = gear.feather;
+            player.weaponName = gear.weaponName;
+            player.damage = gear.damage;
+            player.pommelColor = gear.pommel;
+            player.hiltColor = gear.hilt;
+            player.guardColor = gear.guard;
+            player.bladeColor = gear.blade;
+            player.tipColor = gear.tip;
+        }
+
+        // Danh sách vũ khí khi bấm nút "Đổi vũ khí" trong menu giữa màn hình
+        const extraWeapons = [
+            { name: "🪓 Rìu Chiến Thổ Dân", damage: 45, pommel: "#4d5656", hilt: "#784212", guard: "#5d6d7e", blade: "#bdc3c7", tip: "#ffffff" },
+            { name: "🏹 Cung Tên Săn Mồi", damage: 75, pommel: "#78281f", hilt: "#b9770e", guard: "#d35400", blade: "#f39c12", tip: "#fcf3cf" },
+            { name: "⚡ Giáo Sét Cổ Đại", damage: 110, pommel: "#1b4f72", hilt: "#2874a6", guard: "#5499c7", blade: "#85c1e9", tip: "#ffffff" },
+            { name: "🔥 Đao Lửa Địa Ngục", damage: 160, pommel: "#78281f", hilt: "#d35400", guard: "#922b21", blade: "#e67e22", tip: "#f1c40f" },
+            { name: "👑 Thánh Kiếm Tối Thượng", damage: 250, pommel: "#7d3c98", hilt: "#f1c40f", guard: "#c0392b", blade: "#ffffff", tip: "#f39c12" }
         ];
 
         function changeWeaponRandomly() {
-            let randWeapon = availableWeapons[Math.floor(Math.random() * availableWeapons.length)];
-            player.weaponName = randWeapon.name;
-            player.damage = randWeapon.damage;
-            player.pommelColor = randWeapon.pommel;
-            player.hiltColor = randWeapon.hilt;
-            player.guardColor = randWeapon.guard;
-            player.bladeColor = randWeapon.blade;
-            player.tipColor = randWeapon.tip;
-            alert("✨ Đã đổi vũ khí thành công: " + player.weaponName + " (Sát thương: " + player.damage + ")");
+            let randW = extraWeapons[Math.floor(Math.random() * extraWeapons.length)];
+            player.weaponName = randW.name;
+            player.damage = randW.damage;
+            player.pommelColor = randW.pommel;
+            player.hiltColor = randW.hilt;
+            player.guardColor = randW.guard;
+            player.bladeColor = randW.blade;
+            player.tipColor = randW.tip;
+            alert("✨ Đã đổi vũ khí đặc biệt: " + player.weaponName + " (Sát thương: " + player.damage + ")");
         }
 
-        // --- HỆ THỐNG 10 TẦNG MAP ---
+        // --- HỆ THỐNG SINH 10 MAP ---
         function loadFloor(floorNum) {
             player.x = 1;
             player.y = 1;
+            updatePlayerGear(floorNum);
 
             if (floorNum === 1) {
                 currentMap = [
@@ -355,7 +417,7 @@ game_html = """
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
                 ];
                 exitCoord = { x: 13, y: 1 };
-                monsters = [{ x: 7, y: 5, hp: 450, maxHp: 450, type: 'demon' }];
+                monsters = [{ x: 7, y: 5, hp: 500, maxHp: 500, type: 'demon' }];
             }
             currentMap[exitCoord.y][exitCoord.x] = 2;
         }
@@ -416,7 +478,7 @@ game_html = """
 
                 monsters.forEach(function(m) {
                     if (Math.abs(m.x - player.x) + Math.abs(m.y - player.y) === 1) {
-                        let monsterDmg = 12 + (player.floor * 3);
+                        let monsterDmg = 12 + (player.floor * 4);
                         player.hp -= monsterDmg;
                         floatingTexts.push({ text: "-" + monsterDmg, x: player.x * TILE_SIZE + 10, y: player.y * TILE_SIZE, color: '#e74c3c', timer: 25 });
                         
@@ -609,13 +671,13 @@ game_html = """
                 slashEffect.timer--;
             }
 
-            // 4. NHÂN VẬT CHÍNH (CÓ MẮT, MŨI, MIỆNG, CHÂN NHÚN NHẢY & CẦM KIẾM)
+            // 4. NHÂN VẬT CHÍNH (CÓ MẮT, MŨI, MIỆNG, CHÂN NHÚN NHẢY & TRANG BỊ THEO TẦNG)
             let px = player.x * TILE_SIZE;
             let bounce = Math.sin(idleCounter) * 2; 
             let py = (player.y * TILE_SIZE) + bounce;
 
             // Chân nhún nhảy
-            ctx.fillStyle = '#117864';
+            ctx.fillStyle = player.cloakColor;
             let legOffset = Math.sin(idleCounter * 2) > 0 ? 1 : -1;
             ctx.fillRect(px + 10, py + 30, 4, 6 + legOffset);
             ctx.fillRect(px + 18, py + 30, 4, 6 - legOffset);
@@ -659,7 +721,7 @@ game_html = """
             ctx.fillStyle = '#e0e0e0';
             ctx.fillRect(px + 26, py + 21, 3, 4);
 
-            // Cấu trúc kiếm
+            // Cấu trúc vũ khí tương ứng từng tầng
             ctx.fillStyle = player.pommelColor;
             ctx.fillRect(px + 28, py + 27, 4, 3);
             ctx.fillStyle = player.hiltColor;
@@ -734,8 +796,9 @@ game_html = """
 
                 ctx.fillStyle = '#ffffff';
                 ctx.font = '13px "Courier New"';
-                ctx.fillText('Vũ khí hiện tại: ' + player.weaponName, canvas.width / 2, 145);
-                ctx.fillText('Sát thương: ' + player.damage, canvas.width / 2, 170);
+                ctx.fillText('Trang bị mới: ' + player.armorName, canvas.width / 2, 138);
+                ctx.fillText('Vũ khí mới: ' + player.weaponName, canvas.width / 2, 162);
+                ctx.fillText('Sát thương: ' + player.damage, canvas.width / 2, 186);
 
                 // Nút Đổi Vũ Khí (Bên trái)
                 ctx.fillStyle = '#2980b9';
