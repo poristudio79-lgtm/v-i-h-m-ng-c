@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 
 # Cấu hình trang Streamlit
 st.set_page_config(
-    page_title="Pixel Dungeon Crawler RPG",
+    page_title="Pixel Dungeon: Moving Monsters & BGM",
     page_icon="⚔️",
     layout="centered"
 )
@@ -24,15 +24,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON CRAWLER RPG 🗡️</h1>", unsafe_allow_html=True)
-st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> hoặc <b>Phím Mũi Tên</b> để di chuyển. Thu thập Chìa khóa từ rương để tự động nâng cấp Vũ khí khi sang tầng mới!</div>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: MOVING MONSTERS & BGM 🗡️</h1>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> hoặc <b>Phím Mũi Tên</b>. Quái vật sẽ di chuyển theo bạn! Bấm nút bên dưới để bật nhạc nền!</div>", unsafe_allow_html=True)
 
 game_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Pixel Dungeon Fix</title>
+    <title>Pixel Dungeon Advanced</title>
     <style>
         body {
             background-color: #0b0b0e;
@@ -50,10 +50,25 @@ game_html = """
             border: 4px solid #3d2817;
             background-color: #121016;
             box-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
+            position: relative;
         }
         canvas {
             display: block;
             image-rendering: pixelated;
+        }
+        #audio-btn {
+            margin-top: 10px;
+            background-color: #f1c40f;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        #audio-btn:hover {
+            background-color: #d4ac0d;
         }
     </style>
 </head>
@@ -62,6 +77,7 @@ game_html = """
     <div id="game-container">
         <canvas id="gameCanvas" width="600" height="400"></canvas>
     </div>
+    <button id="audio-btn" onclick="toggleAudio()">🔊 Bật / Tắt Nhạc Nền 8-bit</button>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
@@ -88,24 +104,79 @@ game_html = """
         let monsters = [];
         let exitCoord = { x: 13, y: 8 };
 
-        // Cập nhật vũ khí theo số chìa khóa
+        // --- HỆ THỐNG ÂM THANH NHẠC NỀN 8-BIT (WEB AUDIO API) ---
+        let audioCtx = null;
+        let isPlayingBGM = false;
+        let bgmInterval = null;
+
+        function toggleAudio() {
+            if (!isPlayingBGM) {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                startBGM();
+                isPlayingBGM = true;
+                document.getElementById("audio-btn").innerText = "🔇 Tắt Nhạc Nền";
+            } else {
+                stopBGM();
+                isPlayingBGM = false;
+                document.getElementById("audio-btn").innerText = "🔊 Bật Nhạc Nền 8-bit";
+            }
+        }
+
+        function startBGM() {
+            // Giai điệu nhạc hầm ngục cổ điển (Chiptune arpeggio)
+            const notes = [110, 130.81, 146.83, 164.81, 130.81, 98.00, 110, 146.83];
+            let noteIndex = 0;
+
+            bgmInterval = setInterval(() => {
+                if (!isPlayingBGM || !audioCtx) return;
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+
+                osc.type = 'square'; // Âm thanh kiểu máy game 4 nút cổ điển
+                osc.frequency.setValueAtTime(notes[noteIndex], audioCtx.currentTime);
+
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.25);
+
+                noteIndex = (noteIndex + 1) % notes.length;
+            }, 300);
+        }
+
+        function stopBGM() {
+            if (bgmInterval) {
+                clearInterval(bgmInterval);
+                bgmInterval = null;
+            }
+        }
+        // --------------------------------------------------------
+
         function updateWeapon() {
             if (player.keys >= 2) {
                 player.weaponName = "Thương Thần Thánh";
-                player.weaponColor = "#f1c40f"; // Vàng rực
+                player.weaponColor = "#f1c40f";
                 player.damage = 65;
             } else if (player.keys === 1) {
                 player.weaponName = "Kiếm Sắt Sắc";
-                player.weaponColor = "#3498db"; // Xanh dương
+                player.weaponColor = "#3498db";
                 player.damage = 40;
             } else {
                 player.weaponName = "Kiếm Gỗ Cũ";
-                player.weaponColor = "#cd6155"; // Đỏ xỉn
+                player.weaponColor = "#cd6155";
                 player.damage = 25;
             }
         }
 
-        // Tải bản đồ và quái vật theo tầng
         function loadFloor(floorNum) {
             player.x = 1;
             player.y = 1;
@@ -172,12 +243,45 @@ game_html = """
             currentMap[exitCoord.y][exitCoord.x] = 2;
         }
 
-        // Khởi động game ở tầng 1
         loadFloor(1);
+
+        // --- LOGIC DI CHUYỂN CỦA QUÁI VẬT ---
+        function moveMonsters() {
+            monsters.forEach(m => {
+                // Quái di chuyển hướng về phía người chơi (AI đơn giản)
+                let possibleMoves = [];
+                let directions = [
+                    { x: 0, y: -1 }, { x: 0, y: 1 },
+                    { x: -1, y: 0 }, { x: 1, y: 0 }
+                ];
+
+                directions.forEach(d => {
+                    let nextX = m.x + d.x;
+                    let nextY = m.y + d.y;
+                    if (nextY >= 0 && nextY < ROWS && nextX >= 0 && nextX < COLS) {
+                        if (currentMap[nextY][nextX] !== 1) {
+                            possibleMoves.push({ x: nextX, y: nextY });
+                        }
+                    }
+                });
+
+                if (possibleMoves.length > 0) {
+                    // Ưu tiên chọn ô gần người chơi nhất để đuổi theo
+                    possibleMoves.sort((a, b) => {
+                        let distA = Math.abs(a.x - player.x) + Math.abs(a.y - player.y);
+                        let distB = Math.abs(b.x - player.x) + Math.abs(b.y - player.y);
+                        return distA - distB;
+                    });
+                    // Di chuyển đến ô tối ưu
+                    m.x = possibleMoves[0].x;
+                    m.y = possibleMoves[0].y;
+                }
+            });
+        }
+        // ------------------------------------
 
         // Xử lý sự kiện bàn phím
         window.addEventListener('keydown', function(e) {
-            // Ngăn phím cuộn trang mặc định của trình duyệt
             if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d"].indexOf(e.key) > -1) {
                 e.preventDefault();
             }
@@ -193,7 +297,7 @@ game_html = """
             if (newY >= 0 && newY < ROWS && newX >= 0 && newX < COLS) {
                 let tile = currentMap[newY][newX];
 
-                if (tile !== 1) { // Không phải tường
+                if (tile !== 1) {
                     let mIndex = monsters.findIndex(m => m.x === newX && m.y === newY);
                     if (mIndex !== -1) {
                         // Tấn công quái
@@ -222,10 +326,13 @@ game_html = """
                         player.x = newX;
                         player.y = newY;
                     }
+
+                    // Sau khi người chơi di chuyển xong, quái tiến hành di chuyển đuổi theo
+                    moveMonsters();
                 }
             }
 
-            // Quái phản công nếu đứng gần
+            // Kiểm tra quái tấn công người chơi
             monsters.forEach(function(m) {
                 if (Math.abs(m.x - player.x) + Math.abs(m.y - player.y) === 1) {
                     let monsterDmg = 12 + (player.floor * 4);
@@ -244,7 +351,7 @@ game_html = """
             drawGame();
         });
 
-        // Hàm vẽ giao diện game
+        // Vẽ giao diện game
         function drawGame() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -311,18 +418,17 @@ game_html = """
                 ctx.fillRect(mx + 5, my + 2, Math.max(0, (m.hp / m.maxHp) * 30), 4);
             });
 
-            // 3. Vẽ nhân vật hiệp sĩ và vũ khí trên tay
+            // 3. Vẽ nhân vật hiệp sĩ và vũ khí
             let px = player.x * TILE_SIZE;
             let py = player.y * TILE_SIZE;
             
-            ctx.fillStyle = '#2980b9'; // Áo choàng
+            ctx.fillStyle = '#2980b9';
             ctx.fillRect(px + 8, py + 12, 24, 20);
-            ctx.fillStyle = '#bdc3c7'; // Giáp
+            ctx.fillStyle = '#bdc3c7';
             ctx.fillRect(px + 12, py + 8, 16, 16);
-            ctx.fillStyle = '#8e44ad'; // Mũ
+            ctx.fillStyle = '#8e44ad';
             ctx.fillRect(px + 12, py + 4, 16, 8);
             
-            // Vẽ vũ khí thay đổi màu theo số chìa khóa
             ctx.fillStyle = player.weaponColor;
             ctx.fillRect(px + 28, py + 12, 10, 6);
 
@@ -332,7 +438,6 @@ game_html = """
             ctx.strokeStyle = '#555';
             ctx.strokeRect(10, 10, 240, 100);
 
-            // Thanh HP người chơi
             ctx.fillStyle = '#c0392b';
             ctx.fillRect(20, 18, 160, 16);
             ctx.fillStyle = '#2ecc71';
@@ -343,7 +448,6 @@ game_html = """
             ctx.font = 'bold 11px "Courier New"';
             ctx.fillText('HP: ' + Math.max(0, player.hp) + '/' + player.maxHp, 26, 30);
 
-            // Chỉ số
             ctx.fillStyle = '#f1c40f';
             ctx.fillText('SCORE: ' + player.score, 20, 48);
             
@@ -353,7 +457,6 @@ game_html = """
             ctx.fillStyle = '#e67e22';
             ctx.fillText('KEYS: ' + player.keys, 20, 68);
 
-            // Tên vũ khí hiển thị
             ctx.fillStyle = player.weaponColor;
             ctx.fillText('WEAPON: ' + player.weaponName, 20, 90);
         }
@@ -364,4 +467,4 @@ game_html = """
 </html>
 """
 
-components.html(game_html, height=450)
+components.html(game_html, height=490)
