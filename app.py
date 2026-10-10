@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 
 # Cấu hình trang Streamlit
 st.set_page_config(
-    page_title="Pixel Dungeon: Evolution by Level",
+    page_title="Pixel Dungeon RPG: Ultimate Edition",
     page_icon="⚔️",
     layout="centered"
 )
@@ -24,18 +24,18 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: HERO EVOLUTION 🗡️</h1>", unsafe_allow_html=True)
-st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Tiêu diệt quái vật để thăng cấp (Level Up) và thay đổi trang phục, vũ khí hoàn toàn mới!</div>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: ULTIMATE HERO RPG 🗡️</h1>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Tiêu diệt quái vật để lên cấp (Level Up) thay đổi trang phục, mở rương nâng cấp vũ khí!</div>", unsafe_allow_html=True)
 
 game_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Hero Evolution Pixel Dungeon</title>
+    <title>Ultimate Pixel Dungeon RPG</title>
     <style>
         body {
-            background-color: #0b0b0e;
+            background-color: #050508;
             color: #ffffff;
             font-family: 'Courier New', Courier, monospace;
             display: flex;
@@ -47,9 +47,9 @@ game_html = """
             overflow: hidden;
         }
         #game-container {
-            border: 4px solid #5a1818;
-            background-color: #121016;
-            box-shadow: 0 0 35px rgba(200, 0, 0, 0.4);
+            border: 5px solid #4a1515;
+            background-color: #0d0b10;
+            box-shadow: 0 0 40px rgba(220, 20, 60, 0.5);
             position: relative;
         }
         canvas {
@@ -57,15 +57,17 @@ game_html = """
             image-rendering: pixelated;
         }
         #audio-btn {
-            margin-top: 10px;
-            background-color: #c0392b;
+            margin-top: 12px;
+            background-color: #b03a2e;
             color: #fff;
             border: none;
-            padding: 8px 16px;
+            padding: 10px 20px;
             font-family: 'Courier New', Courier, monospace;
             font-weight: bold;
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: 0.2s;
         }
         #audio-btn:hover {
             background-color: #e74c3c;
@@ -77,9 +79,12 @@ game_html = """
     <div id="game-container">
         <canvas id="gameCanvas" width="600" height="400"></canvas>
     </div>
-    <button id="audio-btn" onclick="toggleAudio()">🔥 Bật / Tắt Nhạc Chiến Đấu Kịch Tính</button>
+    <button id="audio-btn" onclick="toggleAudio()">🔥 Bật / Tắt Nhạc Hầm Ngục Epic</button>
 
     <script>
+        /* ==========================================================
+           1. KHỞI TẠO HỆ THỐNG & GAME ENGINE CORE (~500 DÒNG CODE)
+           ========================================================== */
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
@@ -87,11 +92,12 @@ game_html = """
         const COLS = 15;
         const ROWS = 10;
 
+        // Đối tượng người chơi (Player)
         let player = {
             x: 1,
             y: 1,
-            hp: 100,
-            maxHp: 100,
+            hp: 120,
+            maxHp: 120,
             score: 0,
             floor: 1,
             lvl: 1,
@@ -109,7 +115,7 @@ game_html = """
             guardColor: "#d35400",
             bladeColor: "#e59866",
             tipColor: "#f5b041",
-            damage: 25
+            damage: 30
         };
 
         let currentMap = [];
@@ -119,8 +125,9 @@ game_html = """
         
         let idleCounter = 0;
         let slashEffect = null;
+        let floatingTexts = []; // Mảng chứa hiệu ứng chữ sát thương bay lên
 
-        // --- ÂM THANH KỊCH TÍNH (WEB AUDIO API) ---
+        // --- HỆ THỐNG ÂM THANH CHIPTUNE 8-BIT (WEB AUDIO API) ---
         let audioCtx = null;
         let isPlayingBGM = false;
         let bgmInterval = null;
@@ -135,16 +142,16 @@ game_html = """
                 }
                 startEpicBGM();
                 isPlayingBGM = true;
-                document.getElementById("audio-btn").innerText = "🔇 Tắt Nhạc Kịch Tính";
+                document.getElementById("audio-btn").innerText = "🔇 Tắt Nhạc Hầm Ngục Epic";
             } else {
                 stopBGM();
                 isPlayingBGM = false;
-                document.getElementById("audio-btn").innerText = "🔥 Bật / Tắt Nhạc Chiến Đấu Kịch Tính";
+                document.getElementById("audio-btn").innerText = "🔥 Bật / Tắt Nhạc Hầm Ngục Epic";
             }
         }
 
         function startEpicBGM() {
-            const epicNotes = [220, 220, 261.63, 293.66, 329.63, 293.66, 261.63, 196, 220, 329.63, 392, 329.63];
+            const epicNotes = [220, 246.94, 261.63, 293.66, 329.63, 293.66, 261.63, 196, 220, 329.63, 392, 349.23];
             let noteIndex = 0;
 
             bgmInterval = setInterval(function() {
@@ -165,7 +172,7 @@ game_html = """
                 osc.stop(audioCtx.currentTime + 0.18);
 
                 noteIndex = (noteIndex + 1) % epicNotes.length;
-            }, 180);
+            }, 170);
         }
 
         function stopBGM() {
@@ -175,10 +182,12 @@ game_html = """
             }
         }
 
-        // --- HỆ THỐNG TIẾN HÓA TRANG PHỤC VÀ VŨ KHÍ THEO LEVEL ---
+        /* ==========================================================
+           2. HỆ THỐNG TIẾN HÓA TRANG PHỤC & VŨ KHÍ THEO LEVEL
+           ========================================================== */
         function updateHeroGear() {
             if (player.lvl >= 3) {
-                // Level 3+: Chiến Thần Hầm Ngục (Giáp đỏ rực, vũ khí Thần Thánh tối thượng)
+                // Cấp 3: Chiến thần hầm ngục tối thượng
                 player.armorName = "Giáp Chiến Thần";
                 player.cloakColor = "#78281f"; // Áo choàng đỏ huyết long
                 player.armorColor = "#f1c40f"; // Giáp vàng hoàng kim
@@ -191,11 +200,11 @@ game_html = """
                 player.guardColor = "#c0392b";
                 player.bladeColor = "#f1c40f";
                 player.tipColor = "#ffffff";
-                player.damage = 65;
+                player.damage = 75;
             } else if (player.lvl === 2) {
-                // Level 2: Hiệp Sĩ Hoàng Gia (Giáp xanh ngọc, kiếm sắt sắc bén)
+                // Cấp 2: Hiệp sĩ hoàng gia
                 player.armorName = "Giáp Hoàng Gia";
-                player.cloakColor = "#117864"; // Áo choàng xanh ngọc
+                player.cloakColor = "#117864"; // Áo choàng ngọc bích
                 player.armorColor = "#85c1e9"; // Giáp bạc xanh
                 player.helmetColor = "#2e4053";
                 player.featherColor = "#f39c12";
@@ -206,9 +215,9 @@ game_html = """
                 player.guardColor = "#bdc3c7";
                 player.bladeColor = "#ecf0f1";
                 player.tipColor = "#ffffff";
-                player.damage = 40;
+                player.damage = 45;
             } else {
-                // Level 1: Tập Sự
+                // Cấp 1: Hiệp sĩ tập sự
                 player.armorName = "Giáp Tập Sự";
                 player.cloakColor = "#1b4f72";
                 player.armorColor = "#bdc3c7";
@@ -221,16 +230,20 @@ game_html = """
                 player.guardColor = "#d35400";
                 player.bladeColor = "#e59866";
                 player.tipColor = "#f5b041";
-                player.damage = 25;
+                player.damage = 30;
             }
         }
 
+        /* ==========================================================
+           3. HỆ THỐNG MAP & TẠO QUÁI VẬT THEO TẦNG (FLOOR)
+           ========================================================== */
         function loadFloor(floorNum) {
             player.x = 1;
             player.y = 1;
             updateHeroGear();
 
             if (floorNum === 1) {
+                // Bản đồ Tầng 1: Hành lang hầm mộ đá
                 currentMap = [
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                     [1,0,0,0,1,0,0,0,3,0,1,0,0,2,1],
@@ -245,11 +258,12 @@ game_html = """
                 ];
                 exitCoord = { x: 13, y: 1 };
                 monsters = [
-                    { x: 12, y: 5, hp: 30, maxHp: 30, type: 'slime' },
-                    { x: 6, y: 3, hp: 25, maxHp: 25, type: 'bat' },
-                    { x: 3, y: 7, hp: 35, maxHp: 35, type: 'slime' }
+                    { x: 12, y: 5, hp: 40, maxHp: 40, type: 'slime' },
+                    { x: 6, y: 3, hp: 35, maxHp: 35, type: 'bat' },
+                    { x: 3, y: 7, hp: 45, maxHp: 45, type: 'slime' }
                 ];
             } else if (floorNum === 2) {
+                // Bản đồ Tầng 2: Mê cung ziczac hẹp
                 currentMap = [
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                     [1,0,1,0,0,0,1,0,0,0,3,0,0,0,1],
@@ -264,11 +278,12 @@ game_html = """
                 ];
                 exitCoord = { x: 13, y: 5 };
                 monsters = [
-                    { x: 7, y: 3, hp: 60, maxHp: 60, type: 'goblin' },
-                    { x: 3, y: 5, hp: 50, maxHp: 50, type: 'spider' },
-                    { x: 11, y: 7, hp: 70, maxHp: 70, type: 'goblin' }
+                    { x: 7, y: 3, hp: 75, maxHp: 75, type: 'goblin' },
+                    { x: 3, y: 5, hp: 65, maxHp: 65, type: 'spider' },
+                    { x: 11, y: 7, hp: 80, maxHp: 80, type: 'goblin' }
                 ];
             } else {
+                // Bản đồ Tầng 3+: Cung điện quỷ vương
                 currentMap = [
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                     [1,0,0,0,0,0,1,3,0,0,0,0,1,2,1],
@@ -283,16 +298,19 @@ game_html = """
                 ];
                 exitCoord = { x: 13, y: 1 };
                 monsters = [
-                    { x: 7, y: 4, hp: 110, maxHp: 110, type: 'golem' },
-                    { x: 3, y: 1, hp: 90, maxHp: 90, type: 'demon' },
-                    { x: 13, y: 7, hp: 100, maxHp: 100, type: 'demon' }
+                    { x: 7, y: 4, hp: 130, maxHp: 130, type: 'golem' },
+                    { x: 3, y: 1, hp: 110, maxHp: 110, type: 'demon' },
+                    { x: 13, y: 7, hp: 120, maxHp: 120, type: 'demon' }
                 ];
             }
-            currentMap[exitCoord.y][exitCoord.x] = 2;
+            currentMap[exitCoord.y][exitCoord.x] = 2; // Cửa xuống tầng
         }
 
         loadFloor(1);
 
+        /* ==========================================================
+           4. HỆ THỐNG AI & LOGIC DI CHUYỂN THỜI GIAN THỰC CỦA QUÁI
+           ========================================================== */
         function startMonsterAI() {
             if (monsterMoveTimer) clearInterval(monsterMoveTimer);
 
@@ -325,13 +343,17 @@ game_html = """
                     }
                 });
 
+                // Kiểm tra quái tấn công người chơi
                 monsters.forEach(function(m) {
                     if (Math.abs(m.x - player.x) + Math.abs(m.y - player.y) === 1) {
-                        let monsterDmg = 8 + (player.floor * 3);
+                        let monsterDmg = 10 + (player.floor * 4);
                         player.hp -= monsterDmg;
+                        floatingTexts.push({ text: "-" + monsterDmg, x: player.x * TILE_SIZE + 10, y: player.y * TILE_SIZE, color: '#e74c3c', timer: 25 });
+                        
                         if (player.hp <= 0) {
-                            alert("💀 Game Over! Bạn đã ngã xuống ở Tầng " + player.floor + ". Điểm: " + player.score);
-                            player.hp = 100;
+                            alert("💀 GAME OVER! Bạn đã hy sinh ở Tầng " + player.floor + ". Điểm số cuối cùng: " + player.score);
+                            player.hp = 120;
+                            player.maxHp = 120;
                             player.score = 0;
                             player.floor = 1;
                             player.lvl = 1;
@@ -347,6 +369,9 @@ game_html = """
 
         startMonsterAI();
 
+        /* ==========================================================
+           5. XỬ LÝ SỰ KIỆN BÀN PHÍM & TƯƠNG TÁC GAME
+           ========================================================== */
         window.addEventListener('keydown', function(e) {
             if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d"].indexOf(e.key) > -1) {
                 e.preventDefault();
@@ -366,32 +391,37 @@ game_html = """
                 if (tile !== 1) {
                     let mIndex = monsters.findIndex(m => m.x === newX && m.y === newY);
                     if (mIndex !== -1) {
+                        // Tấn công quái vật
                         monsters[mIndex].hp -= player.damage;
                         player.score += 150;
                         slashEffect = { x: newX, y: newY, timer: 6 };
+                        floatingTexts.push({ text: "-" + player.damage, x: newX * TILE_SIZE + 10, y: newY * TILE_SIZE, color: '#f1c40f', timer: 25 });
 
                         if (monsters[mIndex].hp <= 0) {
                             monsters.splice(mIndex, 1);
-                            player.score += 300;
+                            player.score += 350;
                             
-                            // Kiểm tra thăng cấp Level sau khi hạ quái
-                            if (player.score >= player.lvl * 800 && player.lvl < 3) {
+                            // Check thăng cấp Level
+                            if (player.score >= player.lvl * 900 && player.lvl < 3) {
                                 player.lvl++;
-                                player.maxHp += 30;
+                                player.maxHp += 40;
                                 player.hp = player.maxHp;
                                 updateHeroGear();
-                                alert("🎉 THĂNG CẤP! Bạn đã lên Level " + player.lvl + "! Trang phục và Vũ khí đã tiến hóa thành: " + player.armorName);
+                                alert("🎉 THĂNG CẤP! Bạn đã đạt Cấp độ " + player.lvl + "! Trang phục tiến hóa thành: " + player.armorName);
                             }
                         }
                     } else if (tile === 3) {
-                        player.score += 400;
+                        // Nhặt rương báu
+                        player.score += 500;
                         player.keys += 1;
-                        player.hp = Math.min(player.maxHp, player.hp + 35);
+                        player.hp = Math.min(player.maxHp, player.hp + 45);
                         currentMap[newY][newX] = 0;
+                        floatingTexts.push({ text: "+45 HP", x: newX * TILE_SIZE, y: newY * TILE_SIZE, color: '#2ecc71', timer: 30 });
                     } else if (tile === 2) {
+                        // Xuống tầng mới
                         player.floor++;
-                        player.score += 1000;
-                        alert("⚡ Đã bước xuống Tầng " + player.floor + "! Bản đồ hoàn toàn mới.");
+                        player.score += 1200;
+                        alert("⚡ Chúc mừng! Đã bước xuống Tầng " + player.floor + ". Bản đồ và thử thách mới xuất hiện!");
                         loadFloor(player.floor);
                         startMonsterAI();
                         drawGame();
@@ -406,13 +436,4 @@ game_html = """
             drawGame();
         });
 
-        function gameLoop() {
-            idleCounter += 0.08;
-            drawGame();
-            requestAnimationFrame(gameLoop);
-        }
-
-        function drawGame() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // 1. Vẽ Map
+        //
