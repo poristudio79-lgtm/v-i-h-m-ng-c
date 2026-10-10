@@ -3,88 +3,108 @@ import streamlit.components.v1 as components
 
 # Cấu hình trang Streamlit
 st.set_page_config(
-    page_title="Pixel Dungeon Crawler",
-    page_icon="🗡️",
+    page_title="Pixel Dungeon Crawler RPG",
+    page_icon="⚔️",
     layout="centered"
 )
 
-st.title("🗡️ Pixel Dungeon Crawler")
-st.markdown("Sử dụng các phím **W, A, S, D** hoặc **Phím mũi tên** để di chuyển. Tiêu diệt quái vật (màu đỏ) và tìm lối thoát (ô vàng)!")
+st.markdown("""
+    <style>
+    .main-title {
+        text-align: center;
+        color: #f1c40f;
+        font-family: 'Courier New', Courier, monospace;
+    }
+    .instructions {
+        text-align: center;
+        color: #ccc;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# Mã HTML/JS của tựa game Pixel Dungeon
+st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON CRAWLER RPG ⚔️</h1>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> hoặc <b>Phím Mũi Tên</b> để di chuyển. Tiêu diệt quái vật, mở rương và tìm lối xuống tầng hầm tiếp theo!</div>", unsafe_allow_html=True)
+
+# Mã HTML/JS giả lập đồ họa Pixel Art chi tiết
 game_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Pixel Dungeon</title>
+    <title>Detailed Pixel Dungeon</title>
     <style>
         body {
-            background-color: #1a1a1a;
-            color: white;
+            background-color: #0b0b0e;
+            color: #ffffff;
             font-family: 'Courier New', Courier, monospace;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
             margin: 0;
+            padding: 10px;
             overflow: hidden;
         }
-        canvas {
-            border: 4px solid #444;
-            background-color: #111;
-            image-rendering: pixelated;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        #game-container {
+            border: 4px solid #3d2817;
+            background-color: #121016;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0,0,0,0.8);
+            position: relative;
         }
-        #ui {
-            margin-bottom: 10px;
-            font-size: 18px;
-            font-weight: bold;
+        canvas {
+            display: block;
+            image-rendering: pixelated;
         }
     </style>
 </head>
 <body>
 
-    <div id="ui">Máu: <span id="hp">100</span> | Điểm: <span id="score">0</span> | Tầng: <span id="floor">1</span></div>
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="600" height="400"></canvas>
+    </div>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
         const TILE_SIZE = 40;
-        const GRID_SIZE = 10; // 10x10 tiles = 400x400 pixels
+        const COLS = 15;
+        const ROWS = 10;
 
-        let player = { x: 1, y: 1, hp: 100, maxHp: 100, score: 0, floor: 1 };
-        let monsters = [];
-        let exit = { x: 8, y: 8 };
+        let player = {
+            x: 1,
+            y: 1,
+            hp: 80,
+            maxHp: 100,
+            lvl: 3,
+            score: 2450,
+            floor: 2,
+            keys: 1
+        };
 
-        // 0: Đường đi, 1: Tường
+        // 0: Sàn gạch, 1: Tường đá rêu phong, 2: Cầu thang xuống, 3: Rương báu
         let map = [
-            [1,1,1,1,1,1,1,1,1,1],
-            [1,0,0,0,1,0,0,0,0,1],
-            [1,0,1,0,1,0,1,1,0,1],
-            [1,0,1,0,0,0,0,1,0,1],
-            [1,0,1,1,1,1,0,1,0,1],
-            [1,0,0,0,0,1,0,0,0,1],
-            [1,1,1,0,1,1,1,1,0,1],
-            [1,0,0,0,0,0,0,1,0,1],
-            [1,0,1,1,1,1,0,0,0,1],
-            [1,1,1,1,1,1,1,1,1,1]
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,0,0,0,1,0,0,0,3,0,1,0,0,2,1],
+            [1,0,1,0,1,0,1,1,0,0,1,0,1,0,1],
+            [1,0,1,0,0,0,0,1,0,0,0,0,1,0,1],
+            [1,0,1,1,1,1,0,1,1,1,0,1,1,0,1],
+            [1,0,0,0,0,1,0,0,0,1,0,0,0,0,1],
+            [1,1,1,0,1,1,1,1,0,1,1,1,1,0,1],
+            [1,3,0,0,0,0,0,1,0,0,0,0,3,0,1],
+            [1,0,1,1,1,1,0,0,0,1,1,1,1,0,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
         ];
 
-        function spawnMonsters() {
-            monsters = [
-                { x: 5, y: 1, hp: 20, color: '#e74c3c' },
-                { x: 8, y: 5, hp: 30, color: '#c0392b' },
-                { x: 2, y: 7, hp: 20, color: '#e74c3c' }
-            ];
-        }
+        let monsters = [
+            { x: 12, y: 5, hp: 40, maxHp: 40, color: '#e74c3c', type: 'slime' },
+            { x: 6, y: 3, hp: 30, maxHp: 30, color: '#9b59b6', type: 'bat' },
+            { x: 3, y: 7, hp: 50, maxHp: 50, color: '#e74c3c', type: 'slime' }
+        ];
 
-        spawnMonsters();
-
-        // Xử lý bàn phím
+        // Xử lý di chuyển bàn phím
         window.addEventListener('keydown', e => {
             let newX = player.x;
             let newY = player.y;
@@ -94,97 +114,180 @@ game_html = """
             if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') newX--;
             if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') newX++;
 
-            // Kiểm tra va chạm tường
-            if (map[newY] && map[newY][newX] === 0) {
-                // Kiểm tra va chạm quái vật
-                let hitMonsterIndex = monsters.findIndex(m => m.x === newX && m.y === newY);
-                if (hitMonsterIndex !== -1) {
-                    // Đánh quái
-                    monsters[hitMonsterIndex].hp -= 20;
-                    player.score += 10;
-                    if (monsters[hitMonsterIndex].hp <= 0) {
-                        monsters.splice(hitMonsterIndex, 1);
-                    }
-                } else {
-                    player.x = newX;
-                    player.y = newY;
-                }
+            if (newY >= 0 && newY < ROWS && newX >= 0 && newX < COLS) {
+                let tile = map[newY][newX];
 
-                // Kiểm tra lối thoát
-                if (player.x === exit.x && player.y === exit.y) {
-                    player.floor++;
-                    player.score += 100;
-                    player.x = 1;
-                    player.y = 1;
-                    spawnMonsters();
-                    alert("Chúc mừng bạn đã qua tầng " + (player.floor - 1) + "!");
-                }
-
-                // Quái di chuyển tấn công người chơi
-                monsters.forEach(m => {
-                    if (Math.abs(m.x - player.x) + Math.abs(m.y - player.y) === 1) {
-                        player.hp -= 10;
-                        if (player.hp <= 0) {
-                            alert("Game Over! Điểm của bạn: " + player.score);
-                            player.hp = player.maxHp;
-                            player.score = 0;
-                            player.floor = 1;
-                            player.x = 1;
-                            player.y = 1;
-                            spawnMonsters();
+                // Kiểm tra va chạm tường
+                if (tile !== 1) {
+                    // Kiểm tra quái vật
+                    let mIndex = monsters.findIndex(m => m.x === newX && m.y === newY);
+                    if (mIndex !== -1) {
+                        // Tấn công quái
+                        monsters[mIndex].hp -= 25;
+                        player.score += 50;
+                        if (monsters[mIndex].hp <= 0) {
+                            monsters.splice(mIndex, 1);
                         }
-                    }
-                });
-            }
-
-            updateUI();
-            draw();
-        });
-
-        function updateUI() {
-            document.getElementById('hp').innerText = player.hp;
-            document.getElementById('score').innerText = player.score;
-            document.getElementById('floor').innerText = player.floor;
-        }
-
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Vẽ Map
-            for (let r = 0; r < GRID_SIZE; r++) {
-                for (let c = 0; c < GRID_SIZE; c++) {
-                    if (map[r][c] === 1) {
-                        ctx.fillStyle = '#2c3e50'; // Tường
-                        ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else if (tile === 3) {
+                        // Mở rương
+                        player.score += 300;
+                        player.keys += 1;
+                        map[newY][newX] = 0; // Rương biến mất thành sàn
+                    } else if (tile === 2) {
+                        // Xuống tầng mới
+                        player.floor++;
+                        player.score += 500;
+                        player.x = 1;
+                        player.y = 1;
+                        alert("Chúc mừng! Bạn đã xuống Tầng " + player.floor);
+                        return;
                     } else {
-                        ctx.fillStyle = '#34495e'; // Sàn
-                        ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-                        ctx.strokeStyle = '#2c3e50';
-                        ctx.strokeRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        player.x = newX;
+                        player.y = newY;
                     }
                 }
             }
 
-            // Vẽ Lối thoát
-            ctx.fillStyle = '#f1c40f';
-            ctx.fillRect(exit.x * TILE_SIZE + 5, exit.y * TILE_SIZE + 5, TILE_SIZE - 10, TILE_SIZE - 10);
-
-            // Vẽ Quái vật
+            // Quái tấn công lại người chơi nếu đứng gần
             monsters.forEach(m => {
-                ctx.fillStyle = m.color;
-                ctx.fillRect(m.x * TILE_SIZE + 8, m.y * TILE_SIZE + 8, TILE_SIZE - 16, TILE_SIZE - 16);
+                if (Math.abs(m.x - player.x) + Math.abs(m.y - player.y) === 1) {
+                    player.hp -= 10;
+                    if (player.hp <= 0) {
+                        alert("Game Over! Điểm số của bạn: " + player.score);
+                        player.hp = 100;
+                        player.score = 0;
+                        player.floor = 1;
+                        player.x = 1;
+                        player.y = 1;
+                    }
+                }
             });
 
-            // Vẽ Người chơi (Hiệp sĩ)
+            drawGame();
+        });
+
+        // Hàm vẽ Pixel Art chi tiết mô phỏng phong cách RPG cổ điển
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Vẽ Map (Hầm ngục)
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    let x = c * TILE_SIZE;
+                    let y = r * TILE_SIZE;
+
+                    if (map[r][c] === 1) {
+                        // Tường đá rêu phong
+                        ctx.fillStyle = '#2c223b';
+                        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+                        ctx.fillStyle = '#3e3154';
+                        ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+                        // Họa tiết rêu
+                        ctx.fillStyle = '#27ae60';
+                        ctx.fillRect(x + 4, y + 25, 6, 10);
+                    } else {
+                        // Sàn đá lát
+                        ctx.fillStyle = '#1b1726';
+                        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+                        ctx.strokeStyle = '#252033';
+                        ctx.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
+                    }
+
+                    // Cầu thang xuống tầng (2)
+                    if (map[r][c] === 2) {
+                        ctx.fillStyle = '#f1c40f';
+                        ctx.fillRect(x + 5, y + 5, TILE_SIZE - 10, TILE_SIZE - 10);
+                        ctx.fillStyle = '#d4ac0d';
+                        ctx.fillRect(x + 10, y + 10, TILE_SIZE - 20, TILE_SIZE - 20);
+                    }
+
+                    // Hòm kho báu (3)
+                    if (map[r][c] === 3) {
+                        ctx.fillStyle = '#d35400';
+                        ctx.fillRect(x + 8, y + 12, 24, 18);
+                        ctx.fillStyle = '#f39c12';
+                        ctx.fillRect(x + 16, y + 18, 8, 6); // Khóa rương
+                    }
+                }
+            }
+
+            // 2. Vẽ Quái vật (Slime gai đỏ & Dơi)
+            monsters.forEach(m => {
+                let mx = m.x * TILE_SIZE;
+                let my = m.y * TILE_SIZE;
+                if (m.type === 'slime') {
+                    // Thân Slime đỏ
+                    ctx.fillStyle = '#e74c3c';
+                    ctx.beginPath();
+                    ctx.arc(mx + 20, my + 25, 12, Math.PI, 0, false);
+                    ctx.fill();
+                    // Gai slime
+                    ctx.fillStyle = '#c0392b';
+                    ctx.fillRect(mx + 16, my + 8, 8, 8);
+                    // Mắt quái
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(mx + 14, my + 18, 4, 4);
+                    ctx.fillRect(mx + 22, my + 18, 4, 4);
+                } else {
+                    // Dơi tím
+                    ctx.fillStyle = '#9b59b6';
+                    ctx.fillRect(mx + 10, my + 15, 20, 10);
+                }
+            });
+
+            // 3. Vẽ Nhân vật chính (Hiệp sĩ áo choàng xanh)
+            let px = player.x * TILE_SIZE;
+            let py = player.y * TILE_SIZE;
+            
+            // Áo choàng xanh
+            ctx.fillStyle = '#2980b9';
+            ctx.fillRect(px + 8, py + 12, 24, 20);
+            // Giáp sắt nhân vật
+            ctx.fillStyle = '#bdc3c7';
+            ctx.fillRect(px + 12, py + 8, 16, 16);
+            // Mũ & Tóc
+            ctx.fillStyle = '#8e44ad';
+            ctx.fillRect(px + 12, py + 4, 16, 8);
+            // Kiếm sáng lấp lánh trên tay
+            ctx.fillStyle = '#ecf0f1';
+            ctx.fillRect(px + 28, py + 14, 8, 4);
+            ctx.fillStyle = '#f1c40f';
+            ctx.fillRect(px + 32, py + 12, 4, 8);
+
+            // 4. Vẽ Khung UI / Giao diện HUD (giống hình minh họa)
+            // Khung nền HUD góc trên trái
+            ctx.fillStyle = 'rgba(15, 15, 20, 0.85)';
+            ctx.fillRect(10, 10, 210, 85);
+            ctx.strokeStyle = '#555';
+            ctx.strokeRect(10, 10, 210, 85);
+
+            // Thanh HP Bar
+            ctx.fillStyle = '#c0392b';
+            ctx.fillRect(20, 20, 140, 16);
+            ctx.fillStyle = '#2ecc71';
+            let hpWidth = (player.hp / player.maxHp) * 140;
+            ctx.fillRect(20, 20, hpWidth, 16);
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 11px "Courier New"';
+            ctx.fillText(`HP: ${player.hp}/${player.maxHp}`, 26, 32);
+
+            // Text thông số (LVL, SCORE, FLOOR, KEYS)
+            ctx.fillStyle = '#f1c40f';
+            ctx.fillText(`LVL: ${player.lvl}`, 20, 52);
+            ctx.fillText(`SCORE: ${player.score}`, 20, 72);
+            
             ctx.fillStyle = '#3498db';
-            ctx.fillRect(player.x * TILE_SIZE + 8, player.y * TILE_SIZE + 8, TILE_SIZE - 16, TILE_SIZE - 16);
+            ctx.fillText(`FLOOR: ${player.floor}F`, 120, 52);
+            ctx.fillStyle = '#e67e22';
+            ctx.fillText(`KEYS: ${player.keys}`, 120, 72);
         }
 
-        draw();
+        drawGame();
     </script>
 </body>
 </html>
 """
 
-# Hiển thị game trong Streamlit
-components.html(game_html, height=500)
+components.html(game_html, height=450)
+
