@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 
 # Cấu hình trang Streamlit
 st.set_page_config(
-    page_title="Pixel Dungeon: 10 Floors to Victory",
+    page_title="Pixel Dungeon: Complete Edition",
     page_icon="⚔️",
     layout="centered"
 )
@@ -24,15 +24,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: 10 FLOORS TO VICTORY 🗡️</h1>", unsafe_allow_html=True)
-st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Chinh phục đủ 10 tầng hầm ngục để phá đảo giải cứu thế giới!</div>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: ULTIMATE RPG 🗡️</h1>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Qua màn mới sẽ xuất hiện menu chọn Đổi Vũ Khí hoặc Qua Tầng! Phá đảo ở Tầng 10!</div>", unsafe_allow_html=True)
 
 game_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>10 Floors Pixel Dungeon</title>
+    <title>Pixel Dungeon Complete</title>
     <style>
         body {
             background-color: #050508;
@@ -55,6 +55,7 @@ game_html = """
         canvas {
             display: block;
             image-rendering: pixelated;
+            cursor: pointer;
         }
         #audio-btn {
             margin-top: 12px;
@@ -102,7 +103,7 @@ game_html = """
             armorColor: "#bdc3c7",
             helmetColor: "#566573",
             featherColor: "#e74c3c",
-            weaponName: "🪵 Kiếm Gỗ Cũ",
+            weaponName: "🪵 Kiếm Gỗ Cũ Sơ Khai",
             pommelColor: "#512e5f",
             hiltColor: "#784212",
             guardColor: "#d35400",
@@ -116,12 +117,13 @@ game_html = """
         let exitCoord = { x: 13, y: 8 };
         let monsterMoveTimer = null;
         let gameWon = false;
+        let inTransitionMenu = false; // Trạng thái mở menu giữa màn hình khi qua tầng mới
         
         let idleCounter = 0;
         let slashEffect = null;
         let floatingTexts = [];
 
-        // --- ÂM THANH CHIPTUNE 8-BIT ---
+        // --- HỆ THỐNG ÂM THANH CHIPTUNE 8-BIT ---
         let audioCtx = null;
         let isPlayingBGM = false;
         let bgmInterval = null;
@@ -176,68 +178,31 @@ game_html = """
             }
         }
 
-        // --- HỆ THỐNG VŨ KHÍ VÀ TRANG PHỤC TIẾN HÓA QUA 10 TẦNG ---
-        function updateFloorGear() {
-            if (player.floor >= 9) {
-                player.armorName = "Giáp Ánh Sáng Tối Thượng";
-                player.cloakColor = "#f1c40f";
-                player.armorColor = "#ffffff";
-                player.helmetColor = "#d4ac0d";
-                player.featherColor = "#e74c3c";
-                player.weaponName = "👑 Kiếm Thần Excalibur";
-                player.pommelColor = "#7d3c98";
-                player.hiltColor = "#f1c40f";
-                player.guardColor = "#c0392b";
-                player.bladeColor = "#ffffff";
-                player.tipColor = "#f39c12";
-                player.damage = 120;
-            } else if (player.floor >= 6) {
-                player.armorName = "Giáp Huyết Long";
-                player.cloakColor = "#78281f";
-                player.armorColor = "#e74c3c";
-                player.helmetColor = "#641e16";
-                player.featherColor = "#f1c40f";
-                player.weaponName = "🔥 Thương Lửa Địa Ngục";
-                player.pommelColor = "#512e5f";
-                player.hiltColor = "#d35400";
-                player.guardColor = "#922b21";
-                player.bladeColor = "#e67e22";
-                player.tipColor = "#f1c40f";
-                player.damage = 90;
-            } else if (player.floor >= 3) {
-                player.armorName = "Giáp Hoàng Gia";
-                player.cloakColor = "#117864";
-                player.armorColor = "#85c1e9";
-                player.helmetColor = "#2e4053";
-                player.featherColor = "#f39c12";
-                player.weaponName = "🗡️ Kiếm Sắt Long Huyết";
-                player.pommelColor = "#2c3e50";
-                player.hiltColor = "#117864";
-                player.guardColor = "#5d6d7e";
-                player.bladeColor = "#a9cce3";
-                player.tipColor = "#ffffff";
-                player.damage = 60;
-            } else {
-                player.armorName = "Giáp Tập Sự";
-                player.cloakColor = "#1b4f72";
-                player.armorColor = "#bdc3c7";
-                player.helmetColor = "#566573";
-                player.featherColor = "#e74c3c";
-                player.weaponName = "🪵 Kiếm Gỗ Cũ Sơ Khai";
-                player.pommelColor = "#512e5f";
-                player.hiltColor = "#784212";
-                player.guardColor = "#d35400";
-                player.bladeColor = "#e59866";
-                player.tipColor = "#f5b041";
-                player.damage = 35;
-            }
+        // --- DANH SÁCH VŨ KHÍ KHI DÙNG NÚT ĐỔI VŨ KHÍ ---
+        const availableWeapons = [
+            { name: "🪵 Kiếm Gỗ Cũ", damage: 35, pommel: "#512e5f", hilt: "#784212", guard: "#d35400", blade: "#e59866", tip: "#f5b041" },
+            { name: "🗡️ Kiếm Sắt Sắc Bén", damage: 65, pommel: "#2c3e50", hilt: "#7f8c8d", guard: "#bdc3c7", blade: "#ecf0f1", tip: "#ffffff" },
+            { name: "⚔️ Song Kiếm Phủ Sương", damage: 95, pommel: "#1b4f72", hilt: "#2874a6", guard: "#5499c7", blade: "#85c1e9", tip: "#d4efdf" },
+            { name: "🔥 Thương Lửa Địa Ngục", damage: 130, pommel: "#78281f", hilt: "#d35400", guard: "#922b21", blade: "#e67e22", tip: "#f1c40f" },
+            { name: "👑 Kiếm Thần Excalibur", damage: 170, pommel: "#7d3c98", hilt: "#f1c40f", guard: "#c0392b", blade: "#ffffff", tip: "#f39c12" }
+        ];
+
+        function changeWeaponRandomly() {
+            let randWeapon = availableWeapons[Math.floor(Math.random() * availableWeapons.length)];
+            player.weaponName = randWeapon.name;
+            player.damage = randWeapon.damage;
+            player.pommelColor = randWeapon.pommel;
+            player.hiltColor = randWeapon.hilt;
+            player.guardColor = randWeapon.guard;
+            player.bladeColor = randWeapon.blade;
+            player.tipColor = randWeapon.tip;
+            alert("✨ Đã đổi vũ khí thành công: " + player.weaponName + " (Sát thương: " + player.damage + ")");
         }
 
         // --- HỆ THỐNG SINH 10 MAP KHÁC NHAU ---
         function loadFloor(floorNum) {
             player.x = 1;
             player.y = 1;
-            updateFloorGear();
 
             if (floorNum === 1) {
                 currentMap = [
@@ -375,7 +340,6 @@ game_html = """
                 exitCoord = { x: 13, y: 1 };
                 monsters = [{ x: 7, y: 4, hp: 200, maxHp: 200, type: 'demon' }, { x: 3, y: 1, hp: 190, maxHp: 190, type: 'demon' }];
             } else {
-                // Tầng 10: Sào huyệt trùm cuối (Boss Lvl 10)
                 currentMap = [
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                     [1,0,0,0,0,0,0,3,0,0,0,0,0,2,1],
@@ -389,26 +353,45 @@ game_html = """
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
                 ];
                 exitCoord = { x: 13, y: 1 };
-                monsters = [{ x: 7, y: 5, hp: 350, maxHp: 350, type: 'demon' }]; // Boss Cuối
+                monsters = [{ x: 7, y: 5, hp: 450, maxHp: 450, type: 'demon' }];
             }
             currentMap[exitCoord.y][exitCoord.x] = 2;
         }
 
         loadFloor(1);
 
-        // --- AI QUÁI VẬT THỜI GIAN THỰC ---
+        // --- XỬ LÝ CLICK CHUỘT CHO MENU CHUYỂN TẦNG ---
+        canvas.addEventListener('click', function(e) {
+            let rect = canvas.getBoundingClientRect();
+            let mouseX = e.clientX - rect.left;
+            let mouseY = e.clientY - rect.top;
+
+            if (inTransitionMenu) {
+                // Nút "Đổi vũ khí" (Bên trái: x từ 100 đến 280, y từ 220 đến 270)
+                if (mouseX >= 100 && mouseX <= 280 && mouseY >= 220 && mouseY <= 270) {
+                    changeWeaponRandomly();
+                    drawGame();
+                }
+                // Nút "Qua màn tiếp" (Bên phải: x từ 320 đến 500, y từ 220 đến 270)
+                else if (mouseX >= 320 && mouseX <= 500 && mouseY >= 220 && mouseY <= 270) {
+                    inTransitionMenu = false;
+                    loadFloor(player.floor);
+                    startMonsterAI();
+                    drawGame();
+                }
+            }
+        });
+
+        // --- AI QUÁI VẬT ---
         function startMonsterAI() {
             if (monsterMoveTimer) clearInterval(monsterMoveTimer);
 
             monsterMoveTimer = setInterval(function() {
-                if (gameWon) return;
+                if (gameWon || inTransitionMenu) return;
 
                 monsters.forEach(function(m) {
                     let possibleMoves = [];
-                    let directions = [
-                        { x: 0, y: -1 }, { x: 0, y: 1 },
-                        { x: -1, y: 0 }, { x: 1, y: 0 }
-                    ];
+                    let directions = [{ x: 0, y: -1 }, { x: 0, y: 1 }, { x: -1, y: 0 }, { x: 1, y: 0 }];
 
                     directions.forEach(function(d) {
                         let nextX = m.x + d.x;
@@ -443,6 +426,7 @@ game_html = """
                             player.score = 0;
                             player.floor = 1;
                             player.keys = 0;
+                            inTransitionMenu = false;
                             loadFloor(1);
                         }
                     }
@@ -456,7 +440,7 @@ game_html = """
 
         // --- ĐIỀU KHIỂN BÀN PHÍM ---
         window.addEventListener('keydown', function(e) {
-            if (gameWon) return;
+            if (gameWon || inTransitionMenu) return;
 
             if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d"].indexOf(e.key) > -1) {
                 e.preventDefault();
@@ -498,11 +482,11 @@ game_html = """
                             drawGame();
                             return;
                         }
+                        // Bật menu chuyển tầng giữa màn hình
                         player.floor++;
                         player.score += 2000;
-                        alert("⚡ BƯỚC XUỐNG TẦNG " + player.floor + "! Vũ khí tiến hóa: " + player.weaponName);
-                        loadFloor(player.floor);
-                        startMonsterAI();
+                        inTransitionMenu = true;
+                        if (monsterMoveTimer) clearInterval(monsterMoveTimer);
                         drawGame();
                         return;
                     } else {
@@ -525,7 +509,7 @@ game_html = """
         function drawGame() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Màn hình Phá đảo (Victory Screen)
+            // Màn hình Phá đảo (Victory)
             if (gameWon) {
                 ctx.fillStyle = '#0b0b0e';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -626,7 +610,7 @@ game_html = """
                 slashEffect.timer--;
             }
 
-            // 4. Nhân vật chính
+            // 4. Nhân vật chính (Nghiêng phải, hai tay cầm kiếm, chân nhún nhảy)
             let px = player.x * TILE_SIZE;
             let bounce = Math.sin(idleCounter) * 2; 
             let py = (player.y * TILE_SIZE) + bounce;
@@ -651,6 +635,7 @@ game_html = """
             ctx.fillStyle = player.featherColor;
             ctx.fillRect(px + 14, py + 3, 4, 4);
 
+            // Hai tay cầm kiếm lệch phải
             ctx.fillStyle = player.armorColor;
             ctx.fillRect(px + 20, py + 16, 8, 4);
             ctx.fillStyle = '#e0e0e0';
@@ -661,7 +646,7 @@ game_html = """
             ctx.fillStyle = '#e0e0e0';
             ctx.fillRect(px + 26, py + 21, 3, 4);
 
-            // Vũ khí theo tầng
+            // Cấu trúc kiếm
             ctx.fillStyle = player.pommelColor;
             ctx.fillRect(px + 28, py + 27, 4, 3);
             ctx.fillStyle = player.hiltColor;
@@ -717,6 +702,48 @@ game_html = """
 
             ctx.fillStyle = player.bladeColor;
             ctx.fillText('WEAPON: ' + player.weaponName, 20, 106);
+
+            // --- 7. MENU CHUYỂN TẦNG GIỮA MÀN HÌNH ---
+            if (inTransitionMenu) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = '#1a1824';
+                ctx.fillRect(120, 70, 360, 260);
+                ctx.strokeStyle = '#f1c40f';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(120, 70, 360, 260);
+
+                ctx.fillStyle = '#f1c40f';
+                ctx.font = 'bold 18px "Courier New"';
+                ctx.textAlign = 'center';
+                ctx.fillText('⚡ HOÀN THÀNH TẦNG ' + (player.floor - 1) + ' ⚡', canvas.width / 2, 110);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '13px "Courier New"';
+                ctx.fillText('Vũ khí hiện tại: ' + player.weaponName, canvas.width / 2, 145);
+                ctx.fillText('Sát thương: ' + player.damage, canvas.width / 2, 170);
+
+                // Nút Đổi Vũ Khí (Bên trái)
+                ctx.fillStyle = '#2980b9';
+                ctx.fillRect(100, 215, 180, 50);
+                ctx.strokeStyle = '#3498db';
+                ctx.strokeRect(100, 215, 180, 50);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 13px "Courier New"';
+                ctx.fillText('⚔️ ĐỔI VŨ KHÍ', 190, 245);
+
+                // Nút Qua Tầng Tiếp (Bên phải)
+                ctx.fillStyle = '#27ae60';
+                ctx.fillRect(320, 215, 180, 50);
+                ctx.strokeStyle = '#2ecc71';
+                ctx.strokeRect(320, 215, 180, 50);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 13px "Courier New"';
+                ctx.fillText('▶️ QUA TẦNG ' + player.floor, 410, 245);
+
+                ctx.textAlign = 'left';
+            }
         }
 
         gameLoop();
