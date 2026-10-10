@@ -1,9 +1,10 @@
-import streamlit as st
+
+        import streamlit as st
 import streamlit.components.v1 as components
 
 # Cấu hình trang Streamlit
 st.set_page_config(
-    page_title="Pixel Dungeon: Complete Edition",
+    page_title="Pixel Dungeon: Detailed Hero Edition",
     page_icon="⚔️",
     layout="centered"
 )
@@ -24,15 +25,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: ULTIMATE RPG 🗡️</h1>", unsafe_allow_html=True)
-st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Qua màn mới sẽ xuất hiện menu chọn Đổi Vũ Khí hoặc Qua Tầng! Phá đảo ở Tầng 10!</div>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: DETAILED HERO RPG 🗡️</h1>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Nhân vật chính giờ đây đã có mắt, mũi, miệng rõ ràng! Phá đảo ở Tầng 10!</div>", unsafe_allow_html=True)
 
 game_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Pixel Dungeon Complete</title>
+    <title>Pixel Dungeon Detailed Hero</title>
     <style>
         body {
             background-color: #050508;
@@ -117,7 +118,7 @@ game_html = """
         let exitCoord = { x: 13, y: 8 };
         let monsterMoveTimer = null;
         let gameWon = false;
-        let inTransitionMenu = false; // Trạng thái mở menu giữa màn hình khi qua tầng mới
+        let inTransitionMenu = false;
         
         let idleCounter = 0;
         let slashEffect = null;
@@ -178,7 +179,7 @@ game_html = """
             }
         }
 
-        // --- DANH SÁCH VŨ KHÍ KHI DÙNG NÚT ĐỔI VŨ KHÍ ---
+        // --- DANH SÁCH VŨ KHÍ KHI ĐỔI ---
         const availableWeapons = [
             { name: "🪵 Kiếm Gỗ Cũ", damage: 35, pommel: "#512e5f", hilt: "#784212", guard: "#d35400", blade: "#e59866", tip: "#f5b041" },
             { name: "🗡️ Kiếm Sắt Sắc Bén", damage: 65, pommel: "#2c3e50", hilt: "#7f8c8d", guard: "#bdc3c7", blade: "#ecf0f1", tip: "#ffffff" },
@@ -199,7 +200,7 @@ game_html = """
             alert("✨ Đã đổi vũ khí thành công: " + player.weaponName + " (Sát thương: " + player.damage + ")");
         }
 
-        // --- HỆ THỐNG SINH 10 MAP KHÁC NHAU ---
+        // --- HỆ THỐNG 10 TẦNG MAP ---
         function loadFloor(floorNum) {
             player.x = 1;
             player.y = 1;
@@ -367,12 +368,10 @@ game_html = """
             let mouseY = e.clientY - rect.top;
 
             if (inTransitionMenu) {
-                // Nút "Đổi vũ khí" (Bên trái: x từ 100 đến 280, y từ 220 đến 270)
                 if (mouseX >= 100 && mouseX <= 280 && mouseY >= 220 && mouseY <= 270) {
                     changeWeaponRandomly();
                     drawGame();
                 }
-                // Nút "Qua màn tiếp" (Bên phải: x từ 320 đến 500, y từ 220 đến 270)
                 else if (mouseX >= 320 && mouseX <= 500 && mouseY >= 220 && mouseY <= 270) {
                     inTransitionMenu = false;
                     loadFloor(player.floor);
@@ -482,7 +481,6 @@ game_html = """
                             drawGame();
                             return;
                         }
-                        // Bật menu chuyển tầng giữa màn hình
                         player.floor++;
                         player.score += 2000;
                         inTransitionMenu = true;
@@ -509,7 +507,7 @@ game_html = """
         function drawGame() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Màn hình Phá đảo (Victory)
+            // Màn hình Phá đảo
             if (gameWon) {
                 ctx.fillStyle = '#0b0b0e';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -610,28 +608,46 @@ game_html = """
                 slashEffect.timer--;
             }
 
-            // 4. Nhân vật chính (Nghiêng phải, hai tay cầm kiếm, chân nhún nhảy)
+            // 4. NHÂN VẬT CHÍNH (CÓ MẮT, MŨI, MIỆNG, CHÂN NHÚN NHẢY & CẦM KIẾM)
             let px = player.x * TILE_SIZE;
             let bounce = Math.sin(idleCounter) * 2; 
             let py = (player.y * TILE_SIZE) + bounce;
 
+            // Chân nhún nhảy
             ctx.fillStyle = '#117864';
             let legOffset = Math.sin(idleCounter * 2) > 0 ? 1 : -1;
             ctx.fillRect(px + 10, py + 30, 4, 6 + legOffset);
             ctx.fillRect(px + 18, py + 30, 4, 6 - legOffset);
 
+            // Áo choàng
             ctx.fillStyle = player.cloakColor;
             ctx.fillRect(px + 6, py + 12, 16, 20);
 
+            // Giáp ngực
             ctx.fillStyle = player.armorColor;
             ctx.fillRect(px + 10, py + 14, 14, 14);
             ctx.fillStyle = '#7f8c8d';
             ctx.fillRect(px + 10, py + 14, 14, 3);
 
+            // Mũ giáp
             ctx.fillStyle = player.helmetColor;
             ctx.fillRect(px + 10, py + 6, 14, 10);
+            
+            // --- KHUÔN MẶT: MẮT, MŨI, MIỆNG ---
+            // Mắt trái & Mắt phải (Màu đen tinh nghịch)
             ctx.fillStyle = '#000000';
-            ctx.fillRect(px + 12, py + 9, 8, 3);
+            ctx.fillRect(px + 12, py + 9, 2, 2);
+            ctx.fillRect(px + 18, py + 9, 2, 2);
+
+            // Mũi nhỏ
+            ctx.fillStyle = '#f5b041';
+            ctx.fillRect(px + 15, py + 11, 2, 2);
+
+            // Miệng cườimỉm
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(px + 14, py + 14, 4, 1);
+
+            // Lông vũ trên mũ
             ctx.fillStyle = player.featherColor;
             ctx.fillRect(px + 14, py + 3, 4, 4);
 
