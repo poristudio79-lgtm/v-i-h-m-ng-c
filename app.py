@@ -1,9 +1,10 @@
-import streamlit as st
+
+  import streamlit as st
 import streamlit.components.v1 as components
 
 # Cấu hình trang Streamlit
 st.set_page_config(
-    page_title="Pixel Dungeon: Detailed Legs & Sword Anatomy",
+    page_title="Pixel Dungeon: Unique Maps Per Floor",
     page_icon="⚔️",
     layout="centered"
 )
@@ -24,15 +25,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: DETAILED HERO & SWORD 🗡️</h1>", unsafe_allow_html=True)
-st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Nhân vật có chân chuyển động, thanh kiếm có đầy đủ đế, thân và mũi kiếm sắc bén!</div>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: MULTI-MAP & EPIC BGM 🗡️</h1>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Mỗi tầng hầm là một bản đồ (map) hoàn toàn mới với quái vật nguy hiểm riêng!</div>", unsafe_allow_html=True)
 
 game_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Detailed Sword Pixel Dungeon</title>
+    <title>Multi-Map Pixel Dungeon</title>
     <style>
         body {
             background-color: #0b0b0e;
@@ -96,11 +97,11 @@ game_html = """
             floor: 1,
             keys: 0,
             weaponName: "Kiếm Gỗ Cũ",
-            pommelColor: "#512e5f",  // Đế chuôi kiếm
-            hiltColor: "#784212",    // Chuôi cầm / Cán kiếm
-            guardColor: "#d35400",   // Chắn kiếm (Bảo vệ tay)
-            bladeColor: "#e59866",   // Thân lưỡi kiếm
-            tipColor: "#f5b041",     // Mũi kiếm
+            pommelColor: "#512e5f",
+            hiltColor: "#784212",
+            guardColor: "#d35400",
+            bladeColor: "#e59866",
+            tipColor: "#f5b041",
             damage: 25
         };
 
@@ -196,12 +197,14 @@ game_html = """
             }
         }
 
+        // --- HỆ THỐNG ĐỔI MAP VÀ QUÁI THEO TỪNG TẦNG ---
         function loadFloor(floorNum) {
             player.x = 1;
             player.y = 1;
             updateWeapon();
 
             if (floorNum === 1) {
+                // Map Tầng 1: Hành lang chữ U cơ bản
                 currentMap = [
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                     [1,0,0,0,1,0,0,0,3,0,1,0,0,2,1],
@@ -221,6 +224,7 @@ game_html = """
                     { x: 3, y: 7, hp: 35, maxHp: 35, type: 'slime' }
                 ];
             } else if (floorNum === 2) {
+                // Map Tầng 2: Cấu trúc mê cung ziczac hẹp
                 currentMap = [
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                     [1,0,1,0,0,0,1,0,0,0,3,0,0,0,1],
@@ -240,6 +244,7 @@ game_html = """
                     { x: 11, y: 7, hp: 70, maxHp: 70, type: 'goblin' }
                 ];
             } else {
+                // Map Tầng 3+: Cấu trúc phòng lớn và đảo chướng ngại vật
                 currentMap = [
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                     [1,0,0,0,0,0,1,3,0,0,0,0,1,2,1],
@@ -259,6 +264,7 @@ game_html = """
                     { x: 13, y: 7, hp: 100, maxHp: 100, type: 'demon' }
                 ];
             }
+            // Đặt cầu thang xuống tầng (2) vào đúng tọa độ của map đó
             currentMap[exitCoord.y][exitCoord.x] = 2;
         }
 
@@ -333,227 +339,3 @@ game_html = """
             if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') newX++;
 
             if (newY >= 0 && newY < ROWS && newX >= 0 && newX < COLS) {
-                let tile = currentMap[newY][newX];
-
-                if (tile !== 1) {
-                    let mIndex = monsters.findIndex(m => m.x === newX && m.y === newY);
-                    if (mIndex !== -1) {
-                        monsters[mIndex].hp -= player.damage;
-                        player.score += 100;
-                        slashEffect = { x: newX, y: newY, timer: 6 };
-
-                        if (monsters[mIndex].hp <= 0) {
-                            monsters.splice(mIndex, 1);
-                            player.score += 250;
-                        }
-                    } else if (tile === 3) {
-                        player.score += 400;
-                        player.keys += 1;
-                        player.hp = Math.min(player.maxHp, player.hp + 35);
-                        currentMap[newY][newX] = 0;
-                        updateWeapon();
-                    } else if (tile === 2) {
-                        player.floor++;
-                        player.score += 1000;
-                        alert("⚡ Sang Tầng " + player.floor + "! Vũ khí hiện tại: " + player.weaponName);
-                        loadFloor(player.floor);
-                        startMonsterAI();
-                        drawGame();
-                        return;
-                    } else {
-                        player.x = newX;
-                        player.y = newY;
-                    }
-                }
-            }
-
-            drawGame();
-        });
-
-        // Vòng lặp chạy hoạt ảnh nhún chân liên tục
-        function gameLoop() {
-            idleCounter += 0.08;
-            drawGame();
-            requestAnimationFrame(gameLoop);
-        }
-
-        // Hàm vẽ giao diện game
-        function drawGame() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // 1. Vẽ bản đồ hầm ngục
-            for (let r = 0; r < ROWS; r++) {
-                for (let c = 0; c < COLS; c++) {
-                    let x = c * TILE_SIZE;
-                    let y = r * TILE_SIZE;
-
-                    if (currentMap[r][c] === 1) {
-                        ctx.fillStyle = player.floor === 2 ? '#22313f' : (player.floor >= 3 ? '#4a1515' : '#2c223b');
-                        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-                        ctx.fillStyle = '#3e3154';
-                        ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
-                    } else {
-                        ctx.fillStyle = '#1b1726';
-                        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-                        ctx.strokeStyle = '#252033';
-                        ctx.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
-                    }
-
-                    if (currentMap[r][c] === 2) {
-                        ctx.fillStyle = '#f1c40f';
-                        ctx.fillRect(x + 4, y + 4, TILE_SIZE - 8, TILE_SIZE - 8);
-                    }
-
-                    if (currentMap[r][c] === 3) {
-                        ctx.fillStyle = '#d35400';
-                        ctx.fillRect(x + 8, y + 12, 24, 18);
-                        ctx.fillStyle = '#f39c12';
-                        ctx.fillRect(x + 16, y + 18, 8, 6);
-                    }
-                }
-            }
-
-            // 2. Vẽ quái vật
-            monsters.forEach(function(m) {
-                let mx = m.x * TILE_SIZE;
-                let my = m.y * TILE_SIZE;
-
-                if (m.type === 'slime') {
-                    ctx.fillStyle = '#e74c3c';
-                    ctx.beginPath();
-                    ctx.arc(mx + 20, my + 25, 12, Math.PI, 0, false);
-                    ctx.fill();
-                } else if (m.type === 'bat') {
-                    ctx.fillStyle = '#9b59b6';
-                    ctx.fillRect(mx + 10, my + 15, 20, 10);
-                } else if (m.type === 'goblin') {
-                    ctx.fillStyle = '#27ae60';
-                    ctx.fillRect(mx + 12, my + 10, 16, 20);
-                } else if (m.type === 'spider') {
-                    ctx.fillStyle = '#34495e';
-                    ctx.fillRect(mx + 10, my + 12, 20, 14);
-                } else {
-                    ctx.fillStyle = '#e67e22';
-                    ctx.fillRect(mx + 8, my + 6, 24, 28);
-                }
-
-                ctx.fillStyle = '#000';
-                ctx.fillRect(mx + 5, my + 2, 30, 4);
-                ctx.fillStyle = '#e74c3c';
-                ctx.fillRect(mx + 5, my + 2, Math.max(0, (m.hp / m.maxHp) * 30), 4);
-            });
-
-            // 3. Hiệu ứng vết chém (Slash Effect)
-            if (slashEffect && slashEffect.timer > 0) {
-                let sx = slashEffect.x * TILE_SIZE;
-                let sy = slashEffect.y * TILE_SIZE;
-                
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 4;
-                ctx.beginPath();
-                ctx.moveTo(sx + 8, sy + 8);
-                ctx.lineTo(sx + 32, sy + 32);
-                ctx.stroke();
-
-                ctx.strokeStyle = '#f1c40f';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(sx + 32, sy + 8);
-                ctx.lineTo(sx + 8, sy + 32);
-                ctx.stroke();
-
-                slashEffect.timer--;
-            }
-
-            // 4. VẼ NHÂN VẬT CHÍNH: CÓ CHÂN NHÚN NHẢY & CẤU TRÚC KIẾM HOÀN CHỈNH
-            let px = player.x * TILE_SIZE;
-            let bounce = Math.sin(idleCounter) * 2; 
-            let py = (player.y * TILE_SIZE) + bounce;
-
-            // --- CHÂN NHÂN VẬT (Chuyển động nhún nhẹ) ---
-            ctx.fillStyle = '#117864'; // Màu quần/giày giáp chân
-            let legOffset = Math.sin(idleCounter * 2) > 0 ? 1 : -1;
-            // Chân trái
-            ctx.fillRect(px + 14, py + 30, 4, 6 + legOffset);
-            // Chân phải
-            ctx.fillRect(px + 22, py + 30, 4, 6 - legOffset);
-
-            // --- Áo choàng xanh thẫm phía sau ---
-            ctx.fillStyle = '#1b4f72';
-            ctx.fillRect(px + 10, py + 12, 20, 20);
-
-            // --- Giáp ngực sắt ---
-            ctx.fillStyle = '#bdc3c7';
-            ctx.fillRect(px + 13, py + 14, 14, 14);
-            ctx.fillStyle = '#7f8c8d';
-            ctx.fillRect(px + 13, py + 14, 14, 3);
-
-            // --- Đầu & Mũ hiệp sĩ ---
-            ctx.fillStyle = '#566573';
-            ctx.fillRect(px + 12, py + 6, 16, 10);
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(px + 15, py + 9, 10, 3);
-            ctx.fillStyle = '#e74c3c';
-            ctx.fillRect(px + 18, py + 3, 4, 4);
-
-            // --- CẤU TRÚC THANH KIẾM CHUẨN CHI TIẾT ---
-            // 1. Đế kiếm / Đuôi chuôi kiếm (Pommel)
-            ctx.fillStyle = player.pommelColor;
-            ctx.fillRect(px + 27, py + 24, 4, 3);
-
-            // 2. Cán / Chuôi cầm kiếm (Hilt)
-            ctx.fillStyle = player.hiltColor;
-            ctx.fillRect(px + 27, py + 20, 4, 4);
-
-            // 3. Chắn kiếm / Hộ thủ bảo vệ tay (Guard)
-            ctx.fillStyle = player.guardColor;
-            ctx.fillRect(px + 24, py + 18, 10, 2);
-
-            // 4. Thân lưỡi kiếm (Blade)
-            ctx.fillStyle = player.bladeColor;
-            ctx.fillRect(px + 27, py + 10, 4, 8);
-
-            // 5. Mũi kiếm sắc nhọn (Tip)
-            ctx.fillStyle = player.tipColor;
-            ctx.beginPath();
-            ctx.moveTo(px + 27, py + 10);
-            ctx.lineTo(px + 29, py + 6);
-            ctx.lineTo(px + 31, py + 10);
-            ctx.fill();
-
-            // 5. Vẽ khung giao diện HUD
-            ctx.fillStyle = 'rgba(15, 15, 20, 0.92)';
-            ctx.fillRect(10, 10, 240, 100);
-            ctx.strokeStyle = '#555';
-            ctx.strokeRect(10, 10, 240, 100);
-
-            ctx.fillStyle = '#c0392b';
-            ctx.fillRect(20, 18, 160, 16);
-            ctx.fillStyle = '#2ecc71';
-            let hpW = Math.max(0, (player.hp / player.maxHp) * 160);
-            ctx.fillRect(20, 18, hpW, 16);
-            
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 11px "Courier New"';
-            ctx.fillText('HP: ' + Math.max(0, player.hp) + '/' + player.maxHp, 26, 30);
-
-            ctx.fillStyle = '#f1c40f';
-            ctx.fillText('SCORE: ' + player.score, 20, 48);
-            
-            ctx.fillStyle = '#3498db';
-            ctx.fillText('FLOOR: ' + player.floor + 'F', 140, 48);
-            
-            ctx.fillStyle = '#e67e22';
-            ctx.fillText('KEYS: ' + player.keys, 20, 68);
-
-            ctx.fillStyle = player.bladeColor;
-            ctx.fillText('WEAPON: ' + player.weaponName, 20, 90);
-        }
-
-        gameLoop();
-    </script>
-</body>
-</html>
-"""
-
-components.html(game_html, height=490)
