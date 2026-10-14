@@ -24,7 +24,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: BÌNH NGUYÊN VÔ TẬN 🗡️</h1>", unsafe_allow_html=True)
-st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Đã loại bỏ menu đổi vũ khí. Bật nhạc để nghe giai điệu chiến trận Liên Quân! Tầng 10 đụng độ Trùm <b>SỨA LỬA</b>!</div>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Tầng 10 đụng độ Trùm <b>SỨA LỬA</b>!</div>", unsafe_allow_html=True)
 
 game_html = """
 <!DOCTYPE html>
@@ -79,7 +79,7 @@ game_html = """
     <div id="game-container">
         <canvas id="gameCanvas" width="600" height="400"></canvas>
     </div>
-    <button id="audio-btn" onclick="toggleAudio()">🔥 Bật / Tắt Nhạc Liên Quân Mobile</button>
+    <button id="audio-btn" onclick="toggleAudio()">🔥 Bật / Tắt nhạc</button>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
@@ -141,15 +141,14 @@ game_html = """
                 }
                 startArenaThemeBGM();
                 isPlayingBGM = true;
-                document.getElementById("audio-btn").innerText = "🔇 Tắt Nhạc Liên Quân Mobile";
+                document.getElementById("audio-btn").innerText = "🔇 Bật / Tắt nhạc";
             } else {
                 stopBGM();
                 isPlayingBGM = false;
-                document.getElementById("audio-btn").innerText = "🔥 Bật / Tắt Nhạc Liên Quân Mobile";
+                document.getElementById("audio-btn").innerText = "🔥 Bật / Tắt nhạc";
             }
         }
 
-        // Nhạc nền Anthem Arena (Liên Quân) cực hào hùng khi mới bắt đầu
         function startArenaThemeBGM() {
             const arenaNotes = [
                 220.00, 293.66, 329.63, 349.23, 293.66, 440.00, 392.00, 349.23,
@@ -162,7 +161,6 @@ game_html = """
                 let osc = audioCtx.createOscillator();
                 let gain = audioCtx.createGain();
 
-                // Dùng sóng square/triangle mô phỏng tiếng kèn đồng & giai điệu chiến đấu
                 osc.type = (noteIndex % 4 === 0) ? 'triangle' : 'square';
                 osc.frequency.setValueAtTime(arenaNotes[noteIndex], audioCtx.currentTime);
 
@@ -591,7 +589,6 @@ game_html = """
                             drawGame();
                             return;
                         }
-                        // CHUYỂN THẲNG QUA TẦNG MỚI (ĐÃ BỎ MỤC ĐỔI VŨ KHÍ)
                         player.floor++;
                         player.score += 2000;
                         loadFloor(player.floor);
