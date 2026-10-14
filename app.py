@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(
-    page_title="Pixel Dungeon: Cerberus Warning Edition",
+    page_title="Pixel Dungeon: Fire Jellyfish Edition",
     page_icon="⚔️",
     layout="centered"
 )
@@ -23,15 +23,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: FINAL BOSS CERBERUS 🗡️</h1>", unsafe_allow_html=True)
-st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Khi đến Tầng 10 sẽ có bảng thông báo Chó 3 Đầu Cerberus xuất hiện! HUD được làm mờ tinh tế.</div>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: SỨA LỬA TỐI THƯỢNG 🗡️</h1>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Mỗi tầng có <b>Bản đồ & Quái vật mới</b> riêng biệt. Tầng 10 sẽ đối đầu với Trùm Cuối <b>SỨA LỬA</b>!</div>", unsafe_allow_html=True)
 
 game_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Pixel Dungeon Cerberus Warning</title>
+    <title>Pixel Dungeon Fire Jellyfish</title>
     <style>
         body {
             background-color: #050508;
@@ -122,7 +122,7 @@ game_html = """
         
         let bossDefeatedAnimation = false;
         let jumpAttackAnim = 0;
-        let showCerberusAlert = false; // Biến hiển thị thông báo Cerberus
+        let showBossAlert = false;
 
         let idleCounter = 0;
         let slashEffect = null;
@@ -303,6 +303,143 @@ game_html = """
             }
         }
 
+        // HE THONG MAPS & QUAI VAT DANG DANG CHO 10 TANG
+        const mapsDatabase = {
+            1: [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,0,0,1,0,0,0,3,0,1,0,0,2,1],
+                [1,0,1,0,1,0,1,1,0,0,1,0,1,0,1],
+                [1,0,1,0,0,0,0,1,0,0,0,0,1,0,1],
+                [1,0,1,1,1,1,0,1,1,1,0,1,1,0,1],
+                [1,0,0,0,0,1,0,0,0,1,0,0,0,0,1],
+                [1,1,1,0,1,1,1,1,0,1,1,1,1,0,1],
+                [1,3,0,0,0,0,0,1,0,0,0,0,3,0,1],
+                [1,0,1,1,1,1,0,0,0,1,1,1,1,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            2: [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,1,0,0,0,1,0,0,0,3,0,0,2,1],
+                [1,0,1,1,1,0,1,0,1,1,1,1,1,0,1],
+                [1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],
+                [1,1,1,0,1,1,1,0,1,0,1,0,1,0,1],
+                [1,3,0,0,0,0,1,0,0,0,1,0,0,0,1],
+                [1,0,1,1,1,0,1,1,1,1,1,1,1,0,1],
+                [1,0,0,0,1,0,0,0,0,0,0,0,1,3,1],
+                [1,1,1,0,3,1,1,1,1,1,1,0,0,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            3: [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,0,0,0,0,1,3,0,0,0,0,1,2,1],
+                [1,0,1,1,1,0,1,1,1,0,1,0,1,0,1],
+                [1,0,1,3,1,0,0,0,1,0,1,0,1,0,1],
+                [1,0,1,0,1,1,1,0,1,0,1,1,1,0,1],
+                [1,0,0,0,0,0,1,0,0,0,0,0,0,0,1],
+                [1,1,1,1,1,0,1,1,1,1,1,0,1,1,1],
+                [1,0,0,0,1,0,0,0,3,0,1,0,0,3,1],
+                [1,0,1,0,1,1,1,1,1,0,1,1,1,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            4: [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,1,1,0,0,0,0,0,1,1,1,3,2,1],
+                [1,0,1,1,0,1,1,1,0,1,1,1,0,0,1],
+                [1,0,0,0,0,1,3,1,0,0,0,0,0,1,1],
+                [1,1,1,0,1,1,0,1,1,0,1,1,0,1,1],
+                [1,3,0,0,0,0,0,0,0,0,0,1,0,0,1],
+                [1,1,1,0,1,1,0,1,1,0,1,1,1,0,1],
+                [1,0,0,0,1,1,0,1,1,0,1,3,0,0,1],
+                [1,0,1,1,1,1,0,1,1,0,1,1,1,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            5: [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,0,0,1,3,0,0,0,3,1,0,0,2,1],
+                [1,0,1,0,1,1,1,0,1,1,1,0,1,0,1],
+                [1,0,1,0,0,0,0,0,0,0,0,0,1,0,1],
+                [1,0,1,1,1,0,1,1,1,0,1,1,1,0,1],
+                [1,0,0,0,0,0,1,3,1,0,0,0,0,0,1],
+                [1,1,1,0,1,1,1,0,1,1,1,0,1,1,1],
+                [1,3,0,0,0,0,0,0,0,0,0,0,3,0,1],
+                [1,0,1,1,1,0,1,1,1,0,1,1,1,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            6: [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,1,0,0,0,0,1,0,0,0,0,1,2,1],
+                [1,0,1,1,1,1,0,1,0,1,1,1,1,0,1],
+                [1,0,0,0,0,1,0,0,0,1,3,0,0,0,1],
+                [1,1,1,0,1,1,1,1,0,1,1,1,1,0,1],
+                [1,3,0,0,0,0,3,1,0,0,0,0,1,0,1],
+                [1,1,1,0,1,1,1,1,0,1,1,0,1,0,1],
+                [1,0,0,0,0,0,0,0,0,1,1,0,0,3,1],
+                [1,0,1,1,1,1,1,1,1,1,1,1,1,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            7: [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,0,0,1,3,0,1,0,3,1,0,0,2,1],
+                [1,0,1,0,1,1,0,1,0,1,1,0,1,0,1],
+                [1,0,1,0,0,0,0,0,0,0,0,0,1,0,1],
+                [1,0,1,1,1,0,1,1,1,0,1,1,1,0,1],
+                [1,0,0,0,0,0,1,0,1,0,0,0,0,0,1],
+                [1,1,1,0,1,1,1,0,1,1,1,0,1,1,1],
+                [1,3,0,0,0,0,0,0,0,0,0,0,3,0,1],
+                [1,0,1,1,1,0,1,1,1,0,1,1,1,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            8: [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,1,0,0,0,1,0,0,0,1,3,0,2,1],
+                [1,0,1,1,1,0,1,0,1,1,1,1,1,0,1],
+                [1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],
+                [1,1,1,0,1,1,1,0,1,0,1,0,1,0,1],
+                [1,3,0,0,0,0,1,0,0,0,1,0,0,3,1],
+                [1,0,1,1,1,0,1,1,1,1,1,1,1,0,1],
+                [1,0,0,0,1,0,0,0,0,0,0,0,1,0,1],
+                [1,1,1,0,3,1,1,1,1,1,1,0,0,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            9: [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,0,0,0,0,0,3,0,0,0,0,1,2,1],
+                [1,0,1,1,1,1,0,1,0,1,1,1,1,0,1],
+                [1,0,1,3,0,0,0,1,0,0,0,3,1,0,1],
+                [1,0,1,0,1,1,1,1,1,1,0,1,1,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,1,1,1,1,1,0,1,1,1,1,1,1,0,1],
+                [1,3,0,0,0,0,0,0,0,0,0,0,3,0,1],
+                [1,0,1,1,1,1,1,1,1,1,1,1,1,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ],
+            10: [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,1,1,1,0,1,1,1,0,1,1,1,0,1],
+                [1,0,1,0,0,0,0,0,0,0,0,0,1,0,1],
+                [1,0,1,0,1,1,1,1,1,1,1,0,1,0,1],
+                [1,0,1,0,1,0,0,0,0,0,1,0,1,0,1],
+                [1,0,1,0,1,0,3,0,3,0,1,0,1,0,1],
+                [1,0,1,0,1,1,1,1,1,1,1,0,1,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,2,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ]
+        };
+
+        const monstersDatabase = {
+            1: [{ x: 12, y: 5, hp: 40, maxHp: 40, type: 'slime' }, { x: 6, y: 3, hp: 35, maxHp: 35, type: 'bat' }],
+            2: [{ x: 7, y: 3, hp: 60, maxHp: 60, type: 'goblin' }, { x: 3, y: 5, hp: 55, maxHp: 55, type: 'spider' }],
+            3: [{ x: 7, y: 4, hp: 80, maxHp: 80, type: 'golem' }, { x: 3, y: 1, hp: 70, maxHp: 70, type: 'demon' }],
+            4: [{ x: 6, y: 5, hp: 100, maxHp: 100, type: 'goblin' }, { x: 12, y: 7, hp: 90, maxHp: 90, type: 'demon' }],
+            5: [{ x: 7, y: 3, hp: 120, maxHp: 120, type: 'golem' }, { x: 3, y: 7, hp: 110, maxHp: 110, type: 'demon' }],
+            6: [{ x: 5, y: 3, hp: 140, maxHp: 140, type: 'demon' }, { x: 8, y: 7, hp: 130, maxHp: 130, type: 'golem' }],
+            7: [{ x: 6, y: 5, hp: 160, maxHp: 160, type: 'demon' }, { x: 12, y: 7, hp: 150, maxHp: 150, type: 'golem' }],
+            8: [{ x: 7, y: 3, hp: 180, maxHp: 180, type: 'demon' }, { x: 3, y: 5, hp: 170, maxHp: 170, type: 'golem' }],
+            9: [{ x: 7, y: 4, hp: 200, maxHp: 200, type: 'demon' }, { x: 3, y: 1, hp: 190, maxHp: 190, type: 'demon' }],
+            10: []
+        };
+
         function loadFloor(floorNum) {
             player.x = 1;
             player.y = 1;
@@ -311,44 +448,23 @@ game_html = """
             jumpAttackAnim = 0;
             boss = null;
 
+            // Load Map tương ứng của Tầng
+            currentMap = JSON.parse(JSON.stringify(mapsDatabase[floorNum] || mapsDatabase[1]));
+
             if (floorNum === 10) {
-                currentMap = [
-                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-                    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-                    [1,0,1,1,1,0,1,1,1,0,1,1,1,0,1],
-                    [1,0,1,0,0,0,0,0,0,0,0,0,1,0,1],
-                    [1,0,1,0,1,1,1,1,1,1,1,0,1,0,1],
-                    [1,0,1,0,1,0,0,0,0,0,1,0,1,0,1],
-                    [1,0,1,0,1,0,3,0,3,0,1,0,1,0,1],
-                    [1,0,1,0,1,1,1,1,1,1,1,0,1,0,1],
-                    [1,0,0,0,0,0,0,0,0,0,0,0,0,2,1],
-                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-                ];
                 exitCoord = { x: 13, y: 8 };
                 monsters = [];
-                boss = { x: 11, y: 4, hp: 1600, maxHp: 1600, type: 'cerberus' };
+                // Boss SỨA LỬA Tầng 10 (HP: 1800)
+                boss = { x: 11, y: 4, hp: 1800, maxHp: 1800, type: 'fire_jellyfish' };
                 
-                // Hiển thị thông báo Cerberus xuất hiện trong 3.5 giây
-                showCerberusAlert = true;
+                showBossAlert = true;
                 setTimeout(function() {
-                    showCerberusAlert = false;
+                    showBossAlert = false;
                 }, 3500);
 
             } else {
-                currentMap = [
-                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-                    [1,0,0,0,1,0,0,0,3,0,1,0,0,2,1],
-                    [1,0,1,0,1,0,1,1,0,0,1,0,1,0,1],
-                    [1,0,1,0,0,0,0,1,0,0,0,0,1,0,1],
-                    [1,0,1,1,1,1,0,1,1,1,0,1,1,0,1],
-                    [1,0,0,0,0,1,0,0,0,1,0,0,0,0,1],
-                    [1,1,1,0,1,1,1,1,0,1,1,1,1,0,1],
-                    [1,3,0,0,0,0,0,1,0,0,0,0,3,0,1],
-                    [1,0,1,1,1,1,0,0,0,1,1,1,1,0,1],
-                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-                ];
                 exitCoord = { x: 13, y: 1 };
-                monsters = [{ x: 12, y: 5, hp: 50, maxHp: 50, type: 'slime' }];
+                monsters = JSON.parse(JSON.stringify(monstersDatabase[floorNum] || monstersDatabase[1]));
             }
             currentMap[exitCoord.y][exitCoord.x] = 2;
         }
@@ -380,6 +496,7 @@ game_html = """
             monsterMoveTimer = setInterval(function() {
                 if (gameWon || inTransitionMenu) return;
 
+                // 1. DI CHUYỂN BOSS SỨA LỬA Ở TẦNG 10
                 if (player.floor === 10 && boss && boss.hp > 0) {
                     let possibleMoves = [];
                     let directions = [{ x: 0, y: -1 }, { x: 0, y: 1 }, { x: -1, y: 0 }, { x: 1, y: 0 }];
@@ -409,7 +526,7 @@ game_html = """
                         player.hp -= bossDmg;
                         floatingTexts.push({ text: "-" + bossDmg, x: player.x * TILE_SIZE + 10, y: player.y * TILE_SIZE, color: '#e74c3c', timer: 25 });
                         if (player.hp <= 0) {
-                            alert("💀 Chó 3 Đầu Cerberus đã tiêu diệt bạn!");
+                            alert("💀 TRÙM CUỐI SỨA LỬA ĐÃ THIÊU RỤI BẠN!");
                             player.hp = 200;
                             player.floor = 1;
                             loadFloor(1);
@@ -417,6 +534,7 @@ game_html = """
                     }
                 }
 
+                // 2. DI CHUYỂN QUÁI THƯỜNG
                 monsters.forEach(function(m) {
                     let possibleMoves = [];
                     let directions = [{ x: 0, y: -1 }, { x: 0, y: 1 }, { x: -1, y: 0 }, { x: 1, y: 0 }];
@@ -515,7 +633,7 @@ game_html = """
                     } else if (tile === 2) {
                         if (player.floor >= 10) {
                             if (boss && boss.hp > 0) {
-                                alert("⚔️ Hãy tiêu diệt Chó 3 Đầu Cerberus trước khi mở cửa thoát hiểm!");
+                                alert("⚔️ Hãy tiêu diệt TRÙM CUỐI SỨA LỬA trước khi mở cửa thoát hiểm!");
                                 return;
                             }
                             gameWon = true;
@@ -558,7 +676,7 @@ game_html = """
                 ctx.fillText('👑 CHIẾN THẮNG - PHÁ ĐẢO! 👑', canvas.width / 2, 120);
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 15px "Courier New"';
-                ctx.fillText('Bạn đã hạ gục Chó 3 Đầu và bước qua cánh cửa vinh quang!', canvas.width / 2, 170);
+                ctx.fillText('Bạn đã hạ gục TRÙM SỨA LỬA và bước qua cánh cửa vinh quang!', canvas.width / 2, 170);
                 ctx.fillText('Đã vượt qua hoàn hảo cả 10 Tầng Hầm Ngục!', canvas.width / 2, 210);
                 ctx.fillText('Điểm số cuối cùng: ' + player.score, canvas.width / 2, 250);
                 ctx.fillStyle = '#2ecc71';
@@ -573,9 +691,9 @@ game_html = """
                     let y = r * TILE_SIZE;
 
                     if (currentMap[r][c] === 1) {
-                        ctx.fillStyle = player.floor === 10 ? '#4a1515' : '#2c223b';
+                        ctx.fillStyle = player.floor === 10 ? '#4a1515' : (player.floor >= 6 ? '#1a252f' : '#2c223b');
                         ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-                        ctx.fillStyle = player.floor === 10 ? '#922b21' : '#3e3154';
+                        ctx.fillStyle = player.floor === 10 ? '#922b21' : (player.floor >= 6 ? '#2c3e50' : '#3e3154');
                         ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
                     } else {
                         ctx.fillStyle = '#1b1726';
@@ -598,32 +716,43 @@ game_html = """
                 }
             }
 
-            // 2. VẼ BOSS CHÓ 3 ĐẦU (CERBERUS) CÓ 4 CHÂN, DI CHUYỂN ĐƯỢC
+            // 2. VẼ BOSS SỨA LỬA (FIRE JELLYFISH)
             if (boss && boss.hp > 0) {
                 let bx = boss.x * TILE_SIZE;
                 let by = boss.y * TILE_SIZE;
 
-                ctx.fillStyle = '#8b0000';
-                ctx.fillRect(bx + 4, by + 10, 32, 20);
-                ctx.fillStyle = '#ff4500';
-                ctx.fillRect(bx + 6, by + 12, 28, 16);
+                // Thân vòm Sứa Lửa tỏa sáng
+                let pulse = Math.sin(idleCounter * 4) * 3;
+                ctx.fillStyle = '#ff3300';
+                ctx.beginPath();
+                ctx.arc(bx + 20, by + 16, 16 + pulse, Math.PI, 0, false);
+                ctx.fill();
 
-                let legMove = Math.sin(idleCounter * 3) > 0 ? 2 : -2;
-                ctx.fillStyle = '#5c0000';
-                ctx.fillRect(bx + 6, by + 30, 4, 6 + legMove);
-                ctx.fillRect(bx + 14, by + 30, 4, 6 - legMove);
-                ctx.fillRect(bx + 22, by + 30, 4, 6 + legMove);
-                ctx.fillRect(bx + 30, by + 30, 4, 6 - legMove);
+                ctx.fillStyle = '#ff9900';
+                ctx.beginPath();
+                ctx.arc(bx + 20, by + 16, 10, Math.PI, 0, false);
+                ctx.fill();
 
-                ctx.fillStyle = '#b22222';
-                ctx.fillRect(bx + 2, by + 2, 10, 10);
-                ctx.fillRect(bx + 15, by - 2, 10, 10);
-                ctx.fillRect(bx + 28, by + 2, 10, 10);
-                ctx.fillStyle = '#ffff00';
-                ctx.fillRect(bx + 5, by + 5, 2, 2);
-                ctx.fillRect(bx + 18, by + 1, 2, 2);
-                ctx.fillRect(bx + 31, by + 5, 2, 2);
+                // Mắt Sứa
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(bx + 12, by + 10, 4, 4);
+                ctx.fillRect(bx + 24, by + 10, 4, 4);
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(bx + 14, by + 12, 2, 2);
+                ctx.fillRect(bx + 26, by + 12, 2, 2);
 
+                // Các tua rùa ngọn lửa uốn lượn
+                ctx.strokeStyle = '#e74c3c';
+                ctx.lineWidth = 3;
+                for (let i = 0; i < 5; i++) {
+                    let wave = Math.sin(idleCounter * 5 + i) * 4;
+                    ctx.beginPath();
+                    ctx.moveTo(bx + 8 + i * 6, by + 16);
+                    ctx.lineTo(bx + 8 + i * 6 + wave, by + 36);
+                    ctx.stroke();
+                }
+
+                // Thanh máu Boss
                 ctx.fillStyle = '#000';
                 ctx.fillRect(bx, by - 8, 40, 5);
                 ctx.fillStyle = '#e74c3c';
@@ -635,14 +764,26 @@ game_html = """
                 ctx.fillRect(bx + 4, by + 15, 32, 15);
                 ctx.fillStyle = '#f1c40f';
                 ctx.font = 'bold 12px "Courier New"';
-                ctx.fillText('💥 BOSS GỤC NGÃ!', bx - 15, by - 5);
+                ctx.fillText('💥 SỨA LỬA GỤC NGÃ!', bx - 20, by - 5);
             }
 
+            // Quái thường
             monsters.forEach(function(m) {
                 let mx = m.x * TILE_SIZE;
                 let my = m.y * TILE_SIZE;
-                ctx.fillStyle = '#e67e22';
-                ctx.fillRect(mx + 6, my + 4, 28, 30);
+
+                if (m.type === 'slime') {
+                    ctx.fillStyle = '#2ecc71'; ctx.beginPath(); ctx.arc(mx + 20, my + 25, 12, Math.PI, 0, false); ctx.fill();
+                } else if (m.type === 'bat') {
+                    ctx.fillStyle = '#9b59b6'; ctx.fillRect(mx + 10, my + 15, 20, 10);
+                } else if (m.type === 'goblin') {
+                    ctx.fillStyle = '#e67e22'; ctx.fillRect(mx + 12, my + 10, 16, 20);
+                } else if (m.type === 'spider') {
+                    ctx.fillStyle = '#34495e'; ctx.fillRect(mx + 10, my + 12, 20, 14);
+                } else {
+                    ctx.fillStyle = '#c0392b'; ctx.fillRect(mx + 6, my + 4, 28, 30);
+                }
+
                 ctx.fillStyle = '#000';
                 ctx.fillRect(mx + 5, my + 2, 30, 4);
                 ctx.fillStyle = '#e74c3c';
@@ -741,8 +882,8 @@ game_html = """
             ctx.fillStyle = player.bladeColor;
             ctx.fillText('WEAPON: ' + player.weaponName, 20, 106);
 
-            // --- THÔNG BÁO CERBERUS XUẤT HIỆN Ở TẦNG 10 ---
-            if (showCerberusAlert) {
+            // THÔNG BÁO SỨA LỬA XUẤT HIỆN
+            if (showBossAlert) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.88)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -759,7 +900,7 @@ game_html = """
 
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 15px "Courier New"';
-                ctx.fillText('CHÓ 3 ĐẦU CERBERUS ĐÃ XUẤT HIỆN!', canvas.width / 2, 195);
+                ctx.fillText('TRÙM CUỐI SỨA LỬA ĐÃ XUẤT HIỆN!', canvas.width / 2, 195);
 
                 ctx.fillStyle = '#f1c40f';
                 ctx.font = '13px "Courier New"';
