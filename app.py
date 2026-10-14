@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(
-    page_title="Pixel Dungeon: Cerberus Boss Combat Edition",
+    page_title="Pixel Dungeon: Moving Cerberus Boss",
     page_icon="⚔️",
     layout="centered"
 )
@@ -23,15 +23,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: CERBERUS BOSS COMBAT 🗡️</h1>", unsafe_allow_html=True)
-st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển và chém quái. Ở Tầng 10, hãy chém chết Chó 3 Đầu, xem nhân vật nhảy lên đâm kết liễu và đi vào cửa để phá đảo!</div>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: MOVING CERBERUS BOSS 🗡️</h1>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Boss Chó 3 Đầu (4 chân) ở Tầng 10 sẽ tự động di chuyển săn đuổi bạn! Bảng HUD đã được làm mờ tinh tế.</div>", unsafe_allow_html=True)
 
 game_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Pixel Dungeon Cerberus Boss Combat</title>
+    <title>Pixel Dungeon Moving Cerberus</title>
     <style>
         body {
             background-color: #050508;
@@ -114,14 +114,14 @@ game_html = """
 
         let currentMap = [];
         let monsters = [];
-        let boss = null; // Quái trùm Chó 3 đầu ở Tầng 10
+        let boss = null; // Boss Chó 3 Đầu 4 chân di chuyển được
         let exitCoord = { x: 13, y: 8 };
         let monsterMoveTimer = null;
         let gameWon = false;
         let inTransitionMenu = false;
         
         let bossDefeatedAnimation = false;
-        let jumpAttackAnim = 0; // Hiệu ứng nhảy lên đâm boss
+        let jumpAttackAnim = 0;
 
         let idleCounter = 0;
         let slashEffect = null;
@@ -325,8 +325,7 @@ game_html = """
                 ];
                 exitCoord = { x: 13, y: 8 };
                 monsters = [];
-                // Khởi tạo Boss Chó 3 Đầu trâu máu (HP: 1500)
-                boss = { x: 11, y: 4, hp: 1500, maxHp: 1500, type: 'cerberus' };
+                boss = { x: 11, y: 4, hp: 1600, maxHp: 1600, type: 'cerberus' };
             } else {
                 currentMap = [
                     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -371,8 +370,48 @@ game_html = """
             if (monsterMoveTimer) clearInterval(monsterMoveTimer);
 
             monsterMoveTimer = setInterval(function() {
-                if (gameWon || inTransitionMenu || player.floor === 10) return;
+                if (gameWon || inTransitionMenu) return;
 
+                // --- 1. DI CHUYỂN BOSS CHÓ 3 ĐẦU Ở TẦNG 10 ---
+                if (player.floor === 10 && boss && boss.hp > 0) {
+                    let possibleMoves = [];
+                    let directions = [{ x: 0, y: -1 }, { x: 0, y: 1 }, { x: -1, y: 0 }, { x: 1, y: 0 }];
+
+                    directions.forEach(function(d) {
+                        let nextX = boss.x + d.x;
+                        let nextY = boss.y + d.y;
+                        if (nextY >= 0 && nextY < ROWS && nextX >= 0 && nextX < COLS) {
+                            if (currentMap[nextY][nextX] !== 1) {
+                                possibleMoves.push({ x: nextX, y: nextY });
+                            }
+                        }
+                    });
+
+                    if (possibleMoves.length > 0) {
+                        possibleMoves.sort(function(a, b) {
+                            let distA = Math.abs(a.x - player.x) + Math.abs(a.y - player.y);
+                            let distB = Math.abs(b.x - player.x) + Math.abs(b.y - player.y);
+                            return distA - distB;
+                        });
+                        boss.x = possibleMoves[0].x;
+                        boss.y = possibleMoves[0].y;
+                    }
+
+                    // Boss chạm vào người chơi gây sát thương
+                    if (Math.abs(boss.x - player.x) + Math.abs(boss.y - player.y) <= 1) {
+                        let bossDmg = 25;
+                        player.hp -= bossDmg;
+                        floatingTexts.push({ text: "-" + bossDmg, x: player.x * TILE_SIZE + 10, y: player.y * TILE_SIZE, color: '#e74c3c', timer: 25 });
+                        if (player.hp <= 0) {
+                            alert("💀 Chó 3 Đầu Cerberus đã tiêu diệt bạn!");
+                            player.hp = 200;
+                            player.floor = 1;
+                            loadFloor(1);
+                        }
+                    }
+                }
+
+                // --- 2. DI CHUYỂN QUÁI THƯỜNG CÁC TẦNG KHÁC ---
                 monsters.forEach(function(m) {
                     let possibleMoves = [];
                     let directions = [{ x: 0, y: -1 }, { x: 0, y: 1 }, { x: -1, y: 0 }, { x: 1, y: 0 }];
@@ -414,7 +453,7 @@ game_html = """
                 });
 
                 drawGame();
-            }, 1200);
+            }, 1100);
         }
 
         startMonsterAI();
@@ -438,7 +477,6 @@ game_html = """
                 let tile = currentMap[newY][newX];
 
                 if (tile !== 1) {
-                    // Xử lý tấn công Boss Chó 3 Đầu ở Tầng 10
                     if (boss && boss.hp > 0 && boss.x === newX && boss.y === newY) {
                         boss.hp -= player.damage;
                         player.score += 300;
@@ -447,7 +485,7 @@ game_html = """
 
                         if (boss.hp <= 0) {
                             bossDefeatedAnimation = true;
-                            jumpAttackAnim = 30; // Kích hoạt hoạt ảnh nhảy lên đâm kết liễu
+                            jumpAttackAnim = 30;
                         }
                         return;
                     }
@@ -555,42 +593,49 @@ game_html = """
                 }
             }
 
-            // 2. VẼ BOSS CHÓ 3 ĐẦU (CERBERUS)
+            // 2. VẼ BOSS CHÓ 3 ĐẦU (CERBERUS) CÓ 4 CHÂN, DI CHUYỂN ĐƯỢC
             if (boss && boss.hp > 0) {
                 let bx = boss.x * TILE_SIZE;
                 let by = boss.y * TILE_SIZE;
 
                 // Thân chính
                 ctx.fillStyle = '#8b0000';
-                ctx.fillRect(bx + 4, by + 10, 32, 26);
+                ctx.fillRect(bx + 4, by + 10, 32, 20);
                 ctx.fillStyle = '#ff4500';
-                ctx.fillRect(bx + 8, by + 14, 24, 18);
+                ctx.fillRect(bx + 6, by + 12, 28, 16);
+
+                // 4 chân chó nhún nhảy theo chuyển động
+                let legMove = Math.sin(idleCounter * 3) > 0 ? 2 : -2;
+                ctx.fillStyle = '#5c0000';
+                ctx.fillRect(bx + 6, by + 30, 4, 6 + legMove);
+                ctx.fillRect(bx + 14, by + 30, 4, 6 - legMove);
+                ctx.fillRect(bx + 22, by + 30, 4, 6 + legMove);
+                ctx.fillRect(bx + 30, by + 30, 4, 6 - legMove);
 
                 // 3 đầu chó
                 ctx.fillStyle = '#b22222';
-                ctx.fillRect(bx + 2, by + 4, 10, 10);
-                ctx.fillRect(bx + 15, by + 1, 10, 10);
-                ctx.fillRect(bx + 28, by + 4, 10, 10);
+                ctx.fillRect(bx + 2, by + 2, 10, 10);
+                ctx.fillRect(bx + 15, by - 2, 10, 10);
+                ctx.fillRect(bx + 28, by + 2, 10, 10);
                 // Mắt đỏ
                 ctx.fillStyle = '#ffff00';
-                ctx.fillRect(bx + 5, by + 7, 2, 2);
-                ctx.fillRect(bx + 18, by + 4, 2, 2);
-                ctx.fillRect(bx + 31, by + 7, 2, 2);
+                ctx.fillRect(bx + 5, by + 5, 2, 2);
+                ctx.fillRect(bx + 18, by + 1, 2, 2);
+                ctx.fillRect(bx + 31, by + 5, 2, 2);
 
                 // Thanh máu Boss
                 ctx.fillStyle = '#000';
-                ctx.fillRect(bx, by - 6, 40, 5);
+                ctx.fillRect(bx, by - 8, 40, 5);
                 ctx.fillStyle = '#e74c3c';
-                ctx.fillRect(bx, by - 6, Math.max(0, (boss.hp / boss.maxHp) * 40), 5);
+                ctx.fillRect(bx, by - 8, Math.max(0, (boss.hp / boss.maxHp) * 40), 5);
             } else if (bossDefeatedAnimation) {
-                // Hiệu ứng Boss ngã gục
                 let bx = 11 * TILE_SIZE;
                 let by = 4 * TILE_SIZE;
                 ctx.fillStyle = '#440000';
                 ctx.fillRect(bx + 4, by + 15, 32, 15);
                 ctx.fillStyle = '#f1c40f';
                 ctx.font = 'bold 12px "Courier New"';
-                ctx.fillText('💥 BOSS GỤC NGÃ!', bx - 20, by - 5);
+                ctx.fillText('💥 BOSS GỤC NGÃ!', bx - 15, by - 5);
             }
 
             // Quái thường
@@ -613,14 +658,13 @@ game_html = """
                 slashEffect.timer--;
             }
 
-            // 4. NHÂN VẬT CHÍNH (CÓ NHẢY ĐẦM KẾT LIỄU KHI HẠ BOSS)
+            // 4. NHÂN VẬT CHÍNH (CÓ NHẢY ĐẦM KẾT LIỄU)
             let px = player.x * TILE_SIZE;
             let bounce = Math.sin(idleCounter) * 2; 
             let py = (player.y * TILE_SIZE) + bounce;
 
-            // Nếu đang trong hoạt ảnh nhảy lên đâm kết liễu Boss
             if (jumpAttackAnim > 0) {
-                py -= Math.sin((30 - jumpAttackAnim) / 30 * Math.PI) * 35; // Nhân vật tung người bay lên không
+                py -= Math.sin((30 - jumpAttackAnim) / 30 * Math.PI) * 35;
             }
 
             ctx.fillStyle = player.cloakColor;
@@ -639,7 +683,6 @@ game_html = """
             ctx.fillStyle = player.helmetColor;
             ctx.fillRect(px + 10, py + 6, 14, 10);
             
-            // Khuôn mặt
             ctx.fillStyle = '#000000';
             ctx.fillRect(px + 12, py + 9, 2, 2);
             ctx.fillRect(px + 18, py + 9, 2, 2);
@@ -663,7 +706,6 @@ game_html = """
 
             drawWeapon(px, py);
 
-            // 5. Floating texts
             for (let i = floatingTexts.length - 1; i >= 0; i--) {
                 let ft = floatingTexts[i];
                 ctx.fillStyle = ft.color;
@@ -674,10 +716,10 @@ game_html = """
                 if (ft.timer <= 0) floatingTexts.splice(i, 1);
             }
 
-            // 6. HUD
-            ctx.fillStyle = 'rgba(10, 10, 15, 0.94)';
+            // 5. HUD THÔNG TIN NHÂN VẬT (ĐÃ LÀM MỜ BÁN TRONG SUỐT TINH TẾ)
+            ctx.fillStyle = 'rgba(15, 15, 25, 0.65)';
             ctx.fillRect(10, 10, 260, 115);
-            ctx.strokeStyle = '#666';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
             ctx.strokeRect(10, 10, 260, 115);
 
             ctx.fillStyle = '#c0392b';
@@ -702,7 +744,7 @@ game_html = """
             ctx.fillStyle = player.bladeColor;
             ctx.fillText('WEAPON: ' + player.weaponName, 20, 106);
 
-            // --- 7. MENU CHUYỂN TẦNG ---
+            // --- 6. MENU CHUYỂN TẦNG ---
             if (inTransitionMenu) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
