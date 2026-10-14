@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(
-    page_title="Pixel Dungeon: Bình Nguyên Vô Tận",
+    page_title="Pixel Dungeon: Arena Edition",
     page_icon="⚔️",
     layout="centered"
 )
@@ -24,14 +24,14 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: BÌNH NGUYÊN VÔ TẬN 🗡️</h1>", unsafe_allow_html=True)
-st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Nhạc nền phong cách <b>Bình Nguyên Vô Tận</b> cực căng! Tầng 10 đụng độ Trùm <b>SỨA LỬA</b>!</div>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Đã loại bỏ menu đổi vũ khí. Bật nhạc để nghe giai điệu chiến trận Liên Quân! Tầng 10 đụng độ Trùm <b>SỨA LỬA</b>!</div>", unsafe_allow_html=True)
 
 game_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Pixel Dungeon Bình Nguyên Vô Tận</title>
+    <title>Pixel Dungeon Liên Quân</title>
     <style>
         body {
             background-color: #050508;
@@ -79,7 +79,7 @@ game_html = """
     <div id="game-container">
         <canvas id="gameCanvas" width="600" height="400"></canvas>
     </div>
-    <button id="audio-btn" onclick="toggleAudio()">🔥 Bật / Tắt Nhạc Bình Nguyên Vô Tận</button>
+    <button id="audio-btn" onclick="toggleAudio()">🔥 Bật / Tắt Nhạc Liên Quân Mobile</button>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
@@ -118,7 +118,6 @@ game_html = """
         let exitCoord = { x: 13, y: 8 };
         let monsterMoveTimer = null;
         let gameWon = false;
-        let inTransitionMenu = false;
         
         let bossDefeatedAnimation = false;
         let jumpAttackAnim = 0;
@@ -140,19 +139,22 @@ game_html = """
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume();
                 }
-                startBìnhNguyênVôTậnBGM();
+                startArenaThemeBGM();
                 isPlayingBGM = true;
-                document.getElementById("audio-btn").innerText = "🔇 Tắt Nhạc Bình Nguyên Vô Tận";
+                document.getElementById("audio-btn").innerText = "🔇 Tắt Nhạc Liên Quân Mobile";
             } else {
                 stopBGM();
                 isPlayingBGM = false;
-                document.getElementById("audio-btn").innerText = "🔥 Bật / Tắt Nhạc Bình Nguyên Vô Tận";
+                document.getElementById("audio-btn").innerText = "🔥 Bật / Tắt Nhạc Liên Quân Mobile";
             }
         }
 
-        // Nhạc nền phong cách Bình Nguyên Vô Tận (Nonstop/Vinahouse dồn dập)
-        function startBìnhNguyênVôTậnBGM() {
-            const bassNotes = [130.81, 130.81, 196.00, 164.81, 130.81, 220.00, 196.00, 146.83];
+        // Nhạc nền Anthem Arena (Liên Quân) cực hào hùng khi mới bắt đầu
+        function startArenaThemeBGM() {
+            const arenaNotes = [
+                220.00, 293.66, 329.63, 349.23, 293.66, 440.00, 392.00, 349.23,
+                329.63, 293.66, 261.63, 220.00, 293.66, 349.23, 329.63, 293.66
+            ];
             let noteIndex = 0;
 
             bgmInterval = setInterval(function() {
@@ -160,21 +162,21 @@ game_html = """
                 let osc = audioCtx.createOscillator();
                 let gain = audioCtx.createGain();
 
-                // Tạo âm bass dồn dập kiểu nhạc sàn
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(bassNotes[noteIndex], audioCtx.currentTime);
+                // Dùng sóng square/triangle mô phỏng tiếng kèn đồng & giai điệu chiến đấu
+                osc.type = (noteIndex % 4 === 0) ? 'triangle' : 'square';
+                osc.frequency.setValueAtTime(arenaNotes[noteIndex], audioCtx.currentTime);
 
-                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
 
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
 
                 osc.start();
-                osc.stop(audioCtx.currentTime + 0.14);
+                osc.stop(audioCtx.currentTime + 0.20);
 
-                noteIndex = (noteIndex + 1) % bassNotes.length;
-            }, 140);
+                noteIndex = (noteIndex + 1) % arenaNotes.length;
+            }, 160);
         }
 
         function stopBGM() {
@@ -244,27 +246,6 @@ game_html = """
             player.tipColor = gear.tip;
         }
 
-        const extraWeapons = [
-            { name: "🪓 Rìu Chiến Thổ Dân", type: "axe", damage: 60, pommel: "#4d5656", hilt: "#784212", guard: "#5d6d7e", blade: "#bdc3c7", tip: "#ffffff" },
-            { name: "🏹 Cung Tên Săn Mồi", type: "bow", damage: 85, pommel: "#78281f", hilt: "#b9770e", guard: "#d35400", blade: "#f39c12", tip: "#fcf3cf" },
-            { name: "⚡ Giáo Sét Cổ Đại", type: "spear", damage: 120, pommel: "#1b4f72", hilt: "#2874a6", guard: "#5499c7", blade: "#85c1e9", tip: "#ffffff" },
-            { name: "🔥 Thương Lửa Địa Ngục", type: "spear", damage: 180, pommel: "#78281f", hilt: "#d35400", guard: "#922b21", blade: "#e67e22", tip: "#f1c40f" },
-            { name: "👑 Kiếm Thần Excalibur", type: "excalibur", damage: 280, pommel: "#7d3c98", hilt: "#f1c40f", guard: "#c0392b", blade: "#ffffff", tip: "#f39c12" }
-        ];
-
-        function changeWeaponRandomly() {
-            let randW = extraWeapons[Math.floor(Math.random() * extraWeapons.length)];
-            player.weaponName = randW.name;
-            player.weaponType = randW.type;
-            player.damage = randW.damage;
-            player.pommelColor = randW.pommel;
-            player.hiltColor = randW.hilt;
-            player.guardColor = randW.guard;
-            player.bladeColor = randW.blade;
-            player.tipColor = randW.tip;
-            alert("✨ Đã đổi vũ khí thành công: " + player.weaponName + " (Sát thương: " + player.damage + ")");
-        }
-
         function drawWeapon(px, py) {
             let type = player.weaponType;
 
@@ -280,15 +261,6 @@ game_html = """
                 ctx.fillStyle = player.guardColor; ctx.fillRect(px + 26, py + 10, 8, 2);
                 ctx.fillStyle = player.bladeColor; ctx.beginPath(); ctx.moveTo(px + 25, py + 10); ctx.lineTo(px + 30, py - 6); ctx.lineTo(px + 35, py + 10); ctx.fill();
                 ctx.fillStyle = player.tipColor; ctx.beginPath(); ctx.moveTo(px + 28, py + 4); ctx.lineTo(px + 30, py - 6); ctx.lineTo(px + 32, py + 4); ctx.fill();
-            } else if (type === "axe") {
-                ctx.fillStyle = player.hiltColor; ctx.fillRect(px + 28, py + 10, 4, 18);
-                ctx.fillStyle = player.pommelColor; ctx.fillRect(px + 28, py + 27, 4, 3);
-                ctx.fillStyle = player.bladeColor; ctx.beginPath(); ctx.moveTo(px + 30, py + 10); ctx.lineTo(px + 40, py + 4); ctx.lineTo(px + 40, py + 20); ctx.lineTo(px + 30, py + 16); ctx.fill();
-                ctx.fillStyle = player.tipColor; ctx.fillRect(px + 39, py + 5, 2, 14);
-            } else if (type === "bow") {
-                ctx.strokeStyle = player.hiltColor; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(px + 26, py + 16, 12, -Math.PI / 2, Math.PI / 2, false); ctx.stroke();
-                ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(px + 26, py + 4); ctx.lineTo(px + 26, py + 28); ctx.stroke();
-                ctx.fillStyle = player.tipColor; ctx.fillRect(px + 22, py + 15, 12, 2);
             } else if (type === "excalibur") {
                 ctx.fillStyle = "#f1c40f"; ctx.fillRect(px + 27, py + 28, 6, 4);
                 ctx.fillStyle = player.hiltColor; ctx.fillRect(px + 28, py + 20, 4, 8);
@@ -470,30 +442,11 @@ game_html = """
 
         loadFloor(1);
 
-        canvas.addEventListener('click', function(e) {
-            let rect = canvas.getBoundingClientRect();
-            let mouseX = e.clientX - rect.left;
-            let mouseY = e.clientY - rect.top;
-
-            if (inTransitionMenu) {
-                if (mouseX >= 100 && mouseX <= 280 && mouseY >= 220 && mouseY <= 270) {
-                    changeWeaponRandomly();
-                    drawGame();
-                }
-                else if (mouseX >= 320 && mouseX <= 500 && mouseY >= 220 && mouseY <= 270) {
-                    inTransitionMenu = false;
-                    loadFloor(player.floor);
-                    startMonsterAI();
-                    drawGame();
-                }
-            }
-        });
-
         function startMonsterAI() {
             if (monsterMoveTimer) clearInterval(monsterMoveTimer);
 
             monsterMoveTimer = setInterval(function() {
-                if (gameWon || inTransitionMenu) return;
+                if (gameWon) return;
 
                 if (player.floor === 10 && boss && boss.hp > 0) {
                     let possibleMoves = [];
@@ -579,7 +532,7 @@ game_html = """
         startMonsterAI();
 
         window.addEventListener('keydown', function(e) {
-            if (gameWon || inTransitionMenu) return;
+            if (gameWon) return;
 
             if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d"].indexOf(e.key) > -1) {
                 e.preventDefault();
@@ -638,10 +591,11 @@ game_html = """
                             drawGame();
                             return;
                         }
+                        // CHUYỂN THẲNG QUA TẦNG MỚI (ĐÃ BỎ MỤC ĐỔI VŨ KHÍ)
                         player.floor++;
                         player.score += 2000;
-                        inTransitionMenu = true;
-                        if (monsterMoveTimer) clearInterval(monsterMoveTimer);
+                        loadFloor(player.floor);
+                        startMonsterAI();
                         drawGame();
                         return;
                     } else {
@@ -893,46 +847,6 @@ game_html = """
                 ctx.fillStyle = '#f1c40f';
                 ctx.font = '13px "Courier New"';
                 ctx.fillText('Hãy tiêu diệt nó để mở cánh cửa vinh quang!', canvas.width / 2, 235);
-
-                ctx.textAlign = 'left';
-            }
-
-            if (inTransitionMenu) {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                ctx.fillStyle = '#1a1824';
-                ctx.fillRect(120, 70, 360, 260);
-                ctx.strokeStyle = '#f1c40f';
-                ctx.lineWidth = 3;
-                ctx.strokeRect(120, 70, 360, 260);
-
-                ctx.fillStyle = '#f1c40f';
-                ctx.font = 'bold 18px "Courier New"';
-                ctx.textAlign = 'center';
-                ctx.fillText('⚡ HOÀN THÀNH TẦNG ' + (player.floor - 1) + ' ⚡', canvas.width / 2, 110);
-
-                ctx.fillStyle = '#ffffff';
-                ctx.font = '13px "Courier New"';
-                ctx.fillText('Trang bị mới: ' + player.armorName, canvas.width / 2, 138);
-                ctx.fillText('Vũ khí mới: ' + player.weaponName, canvas.width / 2, 162);
-                ctx.fillText('Sát thương: ' + player.damage, canvas.width / 2, 186);
-
-                ctx.fillStyle = '#2980b9';
-                ctx.fillRect(100, 215, 180, 50);
-                ctx.strokeStyle = '#3498db';
-                ctx.strokeRect(100, 215, 180, 50);
-                ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 13px "Courier New"';
-                ctx.fillText('⚔️ ĐỔI VŨ KHÍ', 190, 245);
-
-                ctx.fillStyle = '#27ae60';
-                ctx.fillRect(320, 215, 180, 50);
-                ctx.strokeStyle = '#2ecc71';
-                ctx.strokeRect(320, 215, 180, 50);
-                ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 13px "Courier New"';
-                ctx.fillText('▶️ QUA TẦNG ' + player.floor, 410, 245);
 
                 ctx.textAlign = 'left';
             }
