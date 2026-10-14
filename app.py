@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(
-    page_title="Pixel Dungeon: Fire Jellyfish Edition",
+    page_title="Pixel Dungeon: Bình Nguyên Vô Tận",
     page_icon="⚔️",
     layout="centered"
 )
@@ -23,15 +23,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: SỨA LỬA TỐI THƯỢNG 🗡️</h1>", unsafe_allow_html=True)
-st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Mỗi tầng có <b>Bản đồ & Quái vật mới</b> riêng biệt. Tầng 10 sẽ đối đầu với Trùm Cuối <b>SỨA LỬA</b>!</div>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: BÌNH NGUYÊN VÔ TẬN 🗡️</h1>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Nhạc nền phong cách <b>Bình Nguyên Vô Tận</b> cực căng! Tầng 10 đụng độ Trùm <b>SỨA LỬA</b>!</div>", unsafe_allow_html=True)
 
 game_html = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Pixel Dungeon Fire Jellyfish</title>
+    <title>Pixel Dungeon Bình Nguyên Vô Tận</title>
     <style>
         body {
             background-color: #050508;
@@ -79,7 +79,7 @@ game_html = """
     <div id="game-container">
         <canvas id="gameCanvas" width="600" height="400"></canvas>
     </div>
-    <button id="audio-btn" onclick="toggleAudio()">🔥 Bật / Tắt Nhạc Hầm Ngục Epic</button>
+    <button id="audio-btn" onclick="toggleAudio()">🔥 Bật / Tắt Nhạc Bình Nguyên Vô Tận</button>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
@@ -140,18 +140,19 @@ game_html = """
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume();
                 }
-                startEpicBGM();
+                startBìnhNguyênVôTậnBGM();
                 isPlayingBGM = true;
-                document.getElementById("audio-btn").innerText = "🔇 Tắt Nhạc Hầm Ngục Epic";
+                document.getElementById("audio-btn").innerText = "🔇 Tắt Nhạc Bình Nguyên Vô Tận";
             } else {
                 stopBGM();
                 isPlayingBGM = false;
-                document.getElementById("audio-btn").innerText = "🔥 Bật / Tắt Nhạc Hầm Ngục Epic";
+                document.getElementById("audio-btn").innerText = "🔥 Bật / Tắt Nhạc Bình Nguyên Vô Tận";
             }
         }
 
-        function startEpicBGM() {
-            const epicNotes = [220, 246.94, 261.63, 293.66, 329.63, 293.66, 261.63, 196, 220, 329.63, 392, 349.23];
+        // Nhạc nền phong cách Bình Nguyên Vô Tận (Nonstop/Vinahouse dồn dập)
+        function startBìnhNguyênVôTậnBGM() {
+            const bassNotes = [130.81, 130.81, 196.00, 164.81, 130.81, 220.00, 196.00, 146.83];
             let noteIndex = 0;
 
             bgmInterval = setInterval(function() {
@@ -159,20 +160,21 @@ game_html = """
                 let osc = audioCtx.createOscillator();
                 let gain = audioCtx.createGain();
 
+                // Tạo âm bass dồn dập kiểu nhạc sàn
                 osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(epicNotes[noteIndex], audioCtx.currentTime);
+                osc.frequency.setValueAtTime(bassNotes[noteIndex], audioCtx.currentTime);
 
-                gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
 
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
 
                 osc.start();
-                osc.stop(audioCtx.currentTime + 0.18);
+                osc.stop(audioCtx.currentTime + 0.14);
 
-                noteIndex = (noteIndex + 1) % epicNotes.length;
-            }, 170);
+                noteIndex = (noteIndex + 1) % bassNotes.length;
+            }, 140);
         }
 
         function stopBGM() {
@@ -303,7 +305,6 @@ game_html = """
             }
         }
 
-        // HE THONG MAPS & QUAI VAT DANG DANG CHO 10 TANG
         const mapsDatabase = {
             1: [
                 [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -448,13 +449,11 @@ game_html = """
             jumpAttackAnim = 0;
             boss = null;
 
-            // Load Map tương ứng của Tầng
             currentMap = JSON.parse(JSON.stringify(mapsDatabase[floorNum] || mapsDatabase[1]));
 
             if (floorNum === 10) {
                 exitCoord = { x: 13, y: 8 };
                 monsters = [];
-                // Boss SỨA LỬA Tầng 10 (HP: 1800)
                 boss = { x: 11, y: 4, hp: 1800, maxHp: 1800, type: 'fire_jellyfish' };
                 
                 showBossAlert = true;
@@ -496,7 +495,6 @@ game_html = """
             monsterMoveTimer = setInterval(function() {
                 if (gameWon || inTransitionMenu) return;
 
-                // 1. DI CHUYỂN BOSS SỨA LỬA Ở TẦNG 10
                 if (player.floor === 10 && boss && boss.hp > 0) {
                     let possibleMoves = [];
                     let directions = [{ x: 0, y: -1 }, { x: 0, y: 1 }, { x: -1, y: 0 }, { x: 1, y: 0 }];
@@ -526,7 +524,7 @@ game_html = """
                         player.hp -= bossDmg;
                         floatingTexts.push({ text: "-" + bossDmg, x: player.x * TILE_SIZE + 10, y: player.y * TILE_SIZE, color: '#e74c3c', timer: 25 });
                         if (player.hp <= 0) {
-                            alert("💀 TRÙM CUỐI SỨA LỬA ĐÃ THIÊU RỤI BẠN!");
+                            alert("💀 TRÙM SỨA LỬA ĐÃ THIÊU RỤI BẠN!");
                             player.hp = 200;
                             player.floor = 1;
                             loadFloor(1);
@@ -534,7 +532,6 @@ game_html = """
                     }
                 }
 
-                // 2. DI CHUYỂN QUÁI THƯỜNG
                 monsters.forEach(function(m) {
                     let possibleMoves = [];
                     let directions = [{ x: 0, y: -1 }, { x: 0, y: 1 }, { x: -1, y: 0 }, { x: 1, y: 0 }];
@@ -633,7 +630,7 @@ game_html = """
                     } else if (tile === 2) {
                         if (player.floor >= 10) {
                             if (boss && boss.hp > 0) {
-                                alert("⚔️ Hãy tiêu diệt TRÙM CUỐI SỨA LỬA trước khi mở cửa thoát hiểm!");
+                                alert("⚔️ Hãy tiêu diệt TRÙM SỨA LỬA trước khi mở cửa thoát hiểm!");
                                 return;
                             }
                             gameWon = true;
@@ -676,7 +673,7 @@ game_html = """
                 ctx.fillText('👑 CHIẾN THẮNG - PHÁ ĐẢO! 👑', canvas.width / 2, 120);
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 15px "Courier New"';
-                ctx.fillText('Bạn đã hạ gục TRÙM SỨA LỬA và bước qua cánh cửa vinh quang!', canvas.width / 2, 170);
+                ctx.fillText('Chào mừng bạn đến với Bình Nguyên Vô Tận vinh quang!', canvas.width / 2, 170);
                 ctx.fillText('Đã vượt qua hoàn hảo cả 10 Tầng Hầm Ngục!', canvas.width / 2, 210);
                 ctx.fillText('Điểm số cuối cùng: ' + player.score, canvas.width / 2, 250);
                 ctx.fillStyle = '#2ecc71';
@@ -684,7 +681,6 @@ game_html = """
                 return;
             }
 
-            // 1. Vẽ Map
             for (let r = 0; r < ROWS; r++) {
                 for (let c = 0; c < COLS; c++) {
                     let x = c * TILE_SIZE;
@@ -716,12 +712,10 @@ game_html = """
                 }
             }
 
-            // 2. VẼ BOSS SỨA LỬA (FIRE JELLYFISH)
             if (boss && boss.hp > 0) {
                 let bx = boss.x * TILE_SIZE;
                 let by = boss.y * TILE_SIZE;
 
-                // Thân vòm Sứa Lửa tỏa sáng
                 let pulse = Math.sin(idleCounter * 4) * 3;
                 ctx.fillStyle = '#ff3300';
                 ctx.beginPath();
@@ -733,7 +727,6 @@ game_html = """
                 ctx.arc(bx + 20, by + 16, 10, Math.PI, 0, false);
                 ctx.fill();
 
-                // Mắt Sứa
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(bx + 12, by + 10, 4, 4);
                 ctx.fillRect(bx + 24, by + 10, 4, 4);
@@ -741,7 +734,6 @@ game_html = """
                 ctx.fillRect(bx + 14, by + 12, 2, 2);
                 ctx.fillRect(bx + 26, by + 12, 2, 2);
 
-                // Các tua rùa ngọn lửa uốn lượn
                 ctx.strokeStyle = '#e74c3c';
                 ctx.lineWidth = 3;
                 for (let i = 0; i < 5; i++) {
@@ -752,7 +744,6 @@ game_html = """
                     ctx.stroke();
                 }
 
-                // Thanh máu Boss
                 ctx.fillStyle = '#000';
                 ctx.fillRect(bx, by - 8, 40, 5);
                 ctx.fillStyle = '#e74c3c';
@@ -767,7 +758,6 @@ game_html = """
                 ctx.fillText('💥 SỨA LỬA GỤC NGÃ!', bx - 20, by - 5);
             }
 
-            // Quái thường
             monsters.forEach(function(m) {
                 let mx = m.x * TILE_SIZE;
                 let my = m.y * TILE_SIZE;
@@ -854,7 +844,6 @@ game_html = """
                 if (ft.timer <= 0) floatingTexts.splice(i, 1);
             }
 
-            // HUD làm mờ bán trong suốt
             ctx.fillStyle = 'rgba(15, 15, 25, 0.65)';
             ctx.fillRect(10, 10, 260, 115);
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
@@ -882,7 +871,6 @@ game_html = """
             ctx.fillStyle = player.bladeColor;
             ctx.fillText('WEAPON: ' + player.weaponName, 20, 106);
 
-            // THÔNG BÁO SỨA LỬA XUẤT HIỆN
             if (showBossAlert) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.88)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -896,10 +884,10 @@ game_html = """
                 ctx.fillStyle = '#e74c3c';
                 ctx.font = 'bold 20px "Courier New"';
                 ctx.textAlign = 'center';
-                ctx.fillText('⚠️ CẢNH BÁO NGUY HIỂM! ⚠️', canvas.width / 2, 155);
+                ctx.fillText('⚠️ BÌNH NGUYÊN VÔ TẬN ⚠️', canvas.width / 2, 155);
 
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 15px "Courier New"';
+                ctx.font = 'bold 14px "Courier New"';
                 ctx.fillText('TRÙM CUỐI SỨA LỬA ĐÃ XUẤT HIỆN!', canvas.width / 2, 195);
 
                 ctx.fillStyle = '#f1c40f';
