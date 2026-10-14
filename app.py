@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(
-    page_title="Pixel Dungeon: Arena Edition",
+    page_title="Pixel Dungeon: Giải Cứu Thế Giới",
     page_icon="⚔️",
     layout="centered"
 )
@@ -23,7 +23,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>⚔️ PIXEL DUNGEON: BÌNH NGUYÊN VÔ TẬN 🗡️</h1>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>⚔️ VƯỢT HẦM NGỤC ĐỂ GIẢI CỨU THẾ GIỚI 🗡️</h1>", unsafe_allow_html=True)
 st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Tầng 10 đụng độ Trùm <b>SỨA LỬA</b>!</div>", unsafe_allow_html=True)
 
 game_html = """
@@ -31,7 +31,7 @@ game_html = """
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Pixel Dungeon Liên Quân</title>
+    <title>Vượt Hầm Ngục Để Giải Cứu Thế Giới</title>
     <style>
         body {
             background-color: #050508;
@@ -621,14 +621,14 @@ game_html = """
                 ctx.fillStyle = '#f1c40f';
                 ctx.font = 'bold 28px "Courier New"';
                 ctx.textAlign = 'center';
-                ctx.fillText('👑 CHIẾN THẮNG - PHÁ ĐẢO! 👑', canvas.width / 2, 120);
+                ctx.fillText('👑 CHIẾN THẮNG - GIẢI CỨU THẾ GIỚI! 👑', canvas.width / 2, 120);
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 15px "Courier New"';
-                ctx.fillText('Chào mừng bạn đến với Bình Nguyên Vô Tận vinh quang!', canvas.width / 2, 170);
+                ctx.fillText('Bạn đã vượt qua hầm ngục và bảo vệ sự bình yên nhân loại!', canvas.width / 2, 170);
                 ctx.fillText('Đã vượt qua hoàn hảo cả 10 Tầng Hầm Ngục!', canvas.width / 2, 210);
                 ctx.fillText('Điểm số cuối cùng: ' + player.score, canvas.width / 2, 250);
                 ctx.fillStyle = '#2ecc71';
-                ctx.fillText('Cảm ơn bạn đã giải cứu thế giới!', canvas.width / 2, 290);
+                ctx.fillText('Cảm ơn người hùng đã cứu thế giới!', canvas.width / 2, 290);
                 return;
             }
 
@@ -835,7 +835,7 @@ game_html = """
                 ctx.fillStyle = '#e74c3c';
                 ctx.font = 'bold 20px "Courier New"';
                 ctx.textAlign = 'center';
-                ctx.fillText('⚠️ BÌNH NGUYÊN VÔ TẬN ⚠️', canvas.width / 2, 155);
+                ctx.fillText('⚠️ CẢNH BÁO NGUY HIỂM! ⚠️', canvas.width / 2, 155);
 
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 14px "Courier New"';
@@ -843,7 +843,7 @@ game_html = """
 
                 ctx.fillStyle = '#f1c40f';
                 ctx.font = '13px "Courier New"';
-                ctx.fillText('Hãy tiêu diệt nó để mở cánh cửa vinh quang!', canvas.width / 2, 235);
+                ctx.fillText('Hãy tiêu diệt nó để giải cứu thế giới!', canvas.width / 2, 235);
 
                 ctx.textAlign = 'left';
             }
