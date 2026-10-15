@@ -24,7 +24,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown("<h1 class='main-title'>⚔️ VƯỢT HẦM NGỤC ĐỂ GIẢI CỨU THẾ GIỚI 🗡️</h1>", unsafe_allow_html=True)
-st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Tầng 10 đụng độ Trùm <b>SỨA LỬA</b>!</div>", unsafe_allow_html=True)
+st.markdown("<div class='instructions'>Dùng phím <b>W, A, S, D</b> để di chuyển. Toàn bộ quái vật đều đã có mắt! Tầng 10 đụng độ Trùm <b>SỨA LỬA</b>!</div>", unsafe_allow_html=True)
 
 game_html = """
 <!DOCTYPE html>
@@ -678,6 +678,7 @@ game_html = """
                 ctx.arc(bx + 20, by + 16, 10, Math.PI, 0, false);
                 ctx.fill();
 
+                // Đôi mắt Trùm Sứa Lửa
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(bx + 12, by + 10, 4, 4);
                 ctx.fillRect(bx + 24, by + 10, 4, 4);
@@ -709,22 +710,77 @@ game_html = """
                 ctx.fillText('💥 SỨA LỬA GỤC NGÃ!', bx - 20, by - 5);
             }
 
+            // VẼ QUÁI VẬT (MỖI LOẠI ĐỀU CÓ MẮT NỔI BẬT)
             monsters.forEach(function(m) {
                 let mx = m.x * TILE_SIZE;
                 let my = m.y * TILE_SIZE;
 
                 if (m.type === 'slime') {
-                    ctx.fillStyle = '#2ecc71'; ctx.beginPath(); ctx.arc(mx + 20, my + 25, 12, Math.PI, 0, false); ctx.fill();
+                    // Slime xanh lá có mắt xòe tròn ngơ ngác
+                    ctx.fillStyle = '#2ecc71';
+                    ctx.beginPath();
+                    ctx.arc(mx + 20, my + 25, 12, Math.PI, 0, false);
+                    ctx.fill();
+                    // Mắt Slime
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(mx + 13, my + 17, 4, 4);
+                    ctx.fillRect(mx + 23, my + 17, 4, 4);
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(mx + 15, my + 18, 2, 2);
+                    ctx.fillRect(mx + 25, my + 18, 2, 2);
+
                 } else if (m.type === 'bat') {
-                    ctx.fillStyle = '#9b59b6'; ctx.fillRect(mx + 10, my + 15, 20, 10);
+                    // Dơi tím có mắt đỏ rực
+                    ctx.fillStyle = '#9b59b6';
+                    ctx.fillRect(mx + 10, my + 15, 20, 10);
+                    // Cánh dơi
+                    ctx.beginPath(); ctx.moveTo(mx + 10, my + 15); ctx.lineTo(mx + 2, my + 8); ctx.lineTo(mx + 10, my + 22); ctx.fill();
+                    ctx.beginPath(); ctx.moveTo(mx + 30, my + 15); ctx.lineTo(mx + 38, my + 8); ctx.lineTo(mx + 30, my + 22); ctx.fill();
+                    // Mắt dơi đỏ
+                    ctx.fillStyle = '#e74c3c';
+                    ctx.fillRect(mx + 14, my + 18, 3, 3);
+                    ctx.fillRect(mx + 23, my + 18, 3, 3);
+
                 } else if (m.type === 'goblin') {
-                    ctx.fillStyle = '#e67e22'; ctx.fillRect(mx + 12, my + 10, 16, 20);
+                    // Goblin xanh da bò / cam có mắt vàng
+                    ctx.fillStyle = '#e67e22';
+                    ctx.fillRect(mx + 12, my + 10, 16, 20);
+                    // Tai Goblin
+                    ctx.fillRect(mx + 8, my + 12, 4, 6);
+                    ctx.fillRect(mx + 28, my + 12, 4, 6);
+                    // Mắt Goblin vàng ngầu
+                    ctx.fillStyle = '#f1c40f';
+                    ctx.fillRect(mx + 15, my + 14, 3, 3);
+                    ctx.fillRect(mx + 22, my + 14, 3, 3);
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(mx + 16, my + 15, 1, 1);
+                    ctx.fillRect(mx + 23, my + 15, 1, 1);
+
                 } else if (m.type === 'spider') {
-                    ctx.fillStyle = '#34495e'; ctx.fillRect(mx + 10, my + 12, 20, 14);
+                    // Nhện đen có 4 con mắt tỏa sáng
+                    ctx.fillStyle = '#34495e';
+                    ctx.fillRect(mx + 10, my + 12, 20, 14);
+                    // Mắt Nhện (4 mắt)
+                    ctx.fillStyle = '#e74c3c';
+                    ctx.fillRect(mx + 12, my + 14, 2, 2);
+                    ctx.fillRect(mx + 16, my + 14, 2, 2);
+                    ctx.fillRect(mx + 22, my + 14, 2, 2);
+                    ctx.fillRect(mx + 26, my + 14, 2, 2);
+
                 } else {
-                    ctx.fillStyle = '#c0392b'; ctx.fillRect(mx + 6, my + 4, 28, 30);
+                    // Quái Quỷ Đỏ có đôi mắt hung tợn tỏa sáng
+                    ctx.fillStyle = '#c0392b';
+                    ctx.fillRect(mx + 6, my + 4, 28, 30);
+                    // Mắt Quái Đỏ
+                    ctx.fillStyle = '#ffff00';
+                    ctx.fillRect(mx + 11, my + 12, 5, 5);
+                    ctx.fillRect(mx + 24, my + 12, 5, 5);
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(mx + 13, my + 13, 2, 3);
+                    ctx.fillRect(mx + 25, my + 13, 2, 3);
                 }
 
+                // Thanh HP của quái
                 ctx.fillStyle = '#000';
                 ctx.fillRect(mx + 5, my + 2, 30, 4);
                 ctx.fillStyle = '#e74c3c';
